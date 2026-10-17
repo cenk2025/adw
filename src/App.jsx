@@ -1,73 +1,70 @@
 import React, { useEffect, useState } from 'react';
 import Lenis from 'lenis';
+import Navigation from './components/Navigation';
 import VoonScrollExperience from './components/VoonScrollExperience';
-import ContentSections from './components/ContentSections';
+import Marquee from './components/Marquee';
+import Intro from './components/Intro';
+import Services from './components/Services';
+import AIStudio from './components/AIStudio';
+import Showcase from './components/Showcase';
+import WebApps from './components/WebApps';
+import Process from './components/Process';
+import Pricing from './components/Pricing';
+import FAQ from './components/FAQ';
+import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
 import './index.css';
 
-const Navigation = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`}>
-      <div className="nav-logo">VOON</div>
-      <div className="nav-links">
-        <a href="#" className="nav-link">Palvelut</a>
-        <a href="#" className="nav-link">Miksi Voon</a>
-        <a href="#" className="nav-link">Kuinka se toimii</a>
-      </div>
-      <button className="nav-cta">
-        Ota yhteyttä
-      </button>
-    </nav>
-  );
-};
-
 export default function App() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      smoothTouch: false,
-      touchMultiplier: 2,
-    });
+    // Service preselected in the contact form when a pricing plan CTA is clicked.
+    const [presetNeed, setPresetNeed] = useState('');
 
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
+    useEffect(() => {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) return;
 
-    requestAnimationFrame(raf);
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smoothWheel: true,
+            touchMultiplier: 2,
+            anchors: { offset: -80 },
+        });
 
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
+        let frame;
+        function raf(time) {
+            lenis.raf(time);
+            frame = requestAnimationFrame(raf);
+        }
+        frame = requestAnimationFrame(raf);
 
-  return (
-    <div className="app-root">
-      <Navigation />
+        return () => {
+            cancelAnimationFrame(frame);
+            lenis.destroy();
+        };
+    }, []);
 
-      <main>
-        <VoonScrollExperience />
-        <ContentSections />
-      </main>
+    return (
+        <div className="app-root" id="top">
+            <Navigation />
 
-      <Footer />
-      <CookieConsent />
-    </div>
-  );
+            <main>
+                <VoonScrollExperience />
+                <Marquee />
+                <Intro />
+                <Services />
+                <AIStudio />
+                <Showcase />
+                <WebApps />
+                <Process />
+                <Pricing onSelectPlan={setPresetNeed} />
+                <FAQ />
+                <Contact presetNeed={presetNeed} />
+            </main>
+
+            <Footer />
+            <CookieConsent />
+        </div>
+    );
 }

@@ -1,86 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import Icon from './Icons';
+import { CONTACT_EMAIL, FOOTER, NAV_LINKS, SERVICES, WEB } from '../content';
 import './Footer.css';
 
 export default function Footer() {
-    const [email, setEmail] = useState('');
-    const [subscribed, setSubscribed] = useState(false);
-
-    const handleSubscribe = (e) => {
-        e.preventDefault();
-        if (email) {
-            setSubscribed(true);
-            setTimeout(() => {
-                setSubscribed(false);
-                setEmail('');
-            }, 3000);
-        }
-    };
-
     return (
         <footer className="footer-container">
-            <div className="footer-content">
+            <div className="footer-cta container">
+                <h2>
+                    Tehdään jotain, <span className="serif gradient-text">mikä pysäyttää.</span>
+                </h2>
+                <a href="#yhteys" className="btn btn-primary">
+                    Varaa maksuton kartoitus
+                    <Icon name="arrowRight" size={18} />
+                </a>
+            </div>
+
+            <div className="footer-content container">
                 <div className="footer-top">
                     <div className="footer-brand">
-                        <h2 className="footer-logo">VOON</h2>
-                        <p className="footer-tagline">Markkinointi, joka ajattelee puolestasi.</p>
-                        <div className="footer-socials">
-                            <a href="#" aria-label="LinkedIn" className="social-link">LN</a>
-                            <a href="#" aria-label="Instagram" className="social-link">IG</a>
-                            <a href="#" aria-label="Twitter" className="social-link">X</a>
-                        </div>
+                        <a href="#top" className="footer-logo">
+                            VOON <span>IQ</span>
+                        </a>
+                        <p className="footer-tagline">{FOOTER.tagline}</p>
+                        <a href={`mailto:${CONTACT_EMAIL}`} className="footer-email">
+                            <Icon name="mail" size={18} />
+                            {CONTACT_EMAIL}
+                        </a>
                     </div>
 
                     <div className="footer-links-group">
                         <div className="footer-column">
-                            <h4>Ratkaisu</h4>
-                            <a href="#">Ominaisuudet</a>
-                            <a href="#">Tekoäly</a>
-                            <a href="#">Automaatio</a>
-                            <a href="#">Analytiikka</a>
+                            <h4>Palvelut</h4>
+                            {SERVICES.map((s) => (
+                                <a key={s.title} href="#palvelut">
+                                    {s.title}
+                                </a>
+                            ))}
                         </div>
                         <div className="footer-column">
-                            <h4>Yritys</h4>
-                            <a href="#">Tietoa meistä</a>
-                            <a href="#">Ura</a>
-                            <a href="#">Blogi</a>
-                            <a href="#">Ota yhteyttä</a>
+                            <h4>Sivusto</h4>
+                            {NAV_LINKS.map((link) => (
+                                <a key={link.href} href={link.href}>
+                                    {link.label}
+                                </a>
+                            ))}
+                            <a href="#yhteys">Yhteys</a>
                         </div>
                         <div className="footer-column">
-                            <h4>Tuki</h4>
-                            <a href="#">Ohjekeskus</a>
-                            <a href="#">API Dokumentaatio</a>
-                            <a href="#">Tila/Status</a>
+                            <h4>Tuotteemme</h4>
+                            {WEB.products.map((p) => (
+                                <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer">
+                                    {p.name}
+                                </a>
+                            ))}
+                            <a href="https://voon.fi" target="_blank" rel="noopener noreferrer">
+                                voon.fi
+                            </a>
                         </div>
-                    </div>
-
-                    <div className="footer-newsletter">
-                        <h4>Pysy ajan tasalla</h4>
-                        <p>Vastaanota uusimmat päivitykset ja markkinointivinkit.</p>
-                        <form onSubmit={handleSubscribe} className="newsletter-form">
-                            <input
-                                type="email"
-                                placeholder="Sähköpostiosoite"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <button type="submit" className={subscribed ? 'success' : ''}>
-                                {subscribed ? 'Kiitos!' : 'Tilaa'}
-                            </button>
-                        </form>
                     </div>
                 </div>
 
                 <div className="footer-bottom">
-                    <div className="footer-legal">
-                        <p>&copy; {new Date().getFullYear()} Voon Marketing Manager. Kaikki oikeudet pidätetään.</p>
-                    </div>
-                    <div className="footer-bottom-links">
-                        <a href="#">Tietosuoja</a>
-                        <a href="#">Evästekäytännöt</a>
-                        <a href="#">Käyttöehdot</a>
-                    </div>
+                    <p>
+                        &copy; {new Date().getFullYear()} {FOOTER.company} · Jyväskylä
+                    </p>
+                    <button
+                        className="footer-cookie"
+                        onClick={() => window.dispatchEvent(new Event('voon:cookie-settings'))}
+                    >
+                        Evästeasetukset
+                    </button>
                 </div>
+            </div>
+
+            <div className="footer-wordmark" aria-hidden="true">
+                VOON IQ
             </div>
         </footer>
     );

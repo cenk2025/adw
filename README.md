@@ -1,16 +1,31 @@
-# React + Vite
+# VOON IQ – markkinointi-, design- ja web-studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lähdekoodi sivustolle [ads.voon.fi](https://ads.voon.fi). Vite + React -sivusto, joka esittelee VOON IQ:n
+tekoälypohjaiset markkinointi-, visuaali- ja web-palvelut.
 
-Currently, two official plugins are available:
+## Rakenne
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `src/content.js` – kaikki sivuston tekstit, hinnat ja UKK yhdessä paikassa.
+- `src/components/` – osiot (hero, palvelut, AI-studio, työt, web, prosessi, hinnat, UKK, yhteys, footer).
+- `src/components/VoonScrollExperience.jsx` – vierityksellä ohjattu hero. Kuvasarjat ovat kansioissa
+  `public/voonarc`, `public/voonc` ja `public/voona`; reunojen mustat palkit ja vesileima rajataan pois piirrettäessä.
+- `public/work/` – töiden galleriassa käytetyt, valmiiksi rajatut WebP-kuvat.
+- `api/send-email.js` – Vercel-funktio yhteydenottolomakkeelle (Resend), sama malli kuin voon.fi:ssä.
 
-## React Compiler
+## Kehitys
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev      # käyttöliittymä (lomakkeen API ei ole käytössä Viten kehityspalvelimessa)
+npx vercel dev   # käyttöliittymä + /api/send-email paikallisesti
+npm run lint
+npm run build
+```
 
-## Expanding the ESLint configuration
+## Ympäristömuuttujat (Vercel)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Muuttuja         | Kuvaus                                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| `RESEND_API_KEY` | Resendin API-avain (sama kuin voon.fi-projektissa).                    |
+| `RESEND_FROM`    | Lähettäjä Resendissä vahvistetusta domainista, esim. `VOON IQ <info@voon.fi>`. |
+| `CONTACT_TO`     | Valinnainen. Vastaanottaja, oletuksena `info@voon.fi`.                 |

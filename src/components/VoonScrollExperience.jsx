@@ -1,266 +1,314 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 'framer-motion';
 import Loader from './Loader';
+import Icon from './Icons';
+import { HERO, HERO_SLIDES, HERO_STORY } from '../content';
 import './VoonScrollExperience.css';
 
-const FRAME_COUNT = 192;
-const SCROLL_HEIGHT_VH = 1000; // Increased height for slower scroll
+const SCROLL_HEIGHT_VH = 460;
 
-const TextSection = ({ opacity, y, title, subtitle }) => (
-    <motion.div
-        style={{ opacity, y }}
-        className="scroll-text-section"
-    >
-        <h2 className="scroll-headline">{title}</h2>
-        <p className="scroll-subtitle">{subtitle}</p>
-    </motion.div>
-);
+// The source frames are 1920x1080 with baked-in letterbox bars (y < 132, y > 947)
+// and a generator watermark in the bottom-right corner. Draw only the clean area.
+const CROP = { sx: 0, sy: 136, sw: 1800, sh: 806 };
+
+// The loader hides once every 16th frame is in, so scrubbing works immediately.
+const COARSE_STEP = 16;
+const MAX_PARALLEL = 6;
+
+const STORY_RANGES = [
+    [0.14, 0.19, 0.3, 0.35],
+    [0.38, 0.43, 0.53, 0.58],
+    [0.61, 0.66, 0.76, 0.81],
+    [0.84, 0.89, 1, 1.01],
+];
+
+const frameSrc = (slide, i) =>
+    `/${slide.id}/ezgif-frame-${String(i + slide.firstFrame).padStart(3, '0')}.jpg`;
+
+const coarseTotal = (slide) => Math.ceil(slide.count / COARSE_STEP);
+
+// Coarse-to-fine order: every 16th frame first, then every 8th, 4th, 2nd, then the rest.
+function loadOrder(count) {
+    const order = [];
+    const seen = new Set();
+    for (const step of [COARSE_STEP, 8, 4, 2, 1]) {
+        for (let i = 0; i < count; i += step) {
+            if (!seen.has(i)) {
+                seen.add(i);
+                order.push(i);
+            }
+        }
+    }
+    if (!seen.has(count - 1)) order.push(count - 1);
+    return order;
+}
+
+function startLoading(entry, slide, { onFrame, onCoarse }) {
+    const order = loadOrder(slide.count);
+    let cursor = 0;
+
+    const next = () => {
+        if (cursor >= order.length) return;
+        const i = order[cursor++];
+        const img = new Image();
+        img.decoding = 'async';
+        const done = (ok) => {
+            if (ok) entry.images[i] = img;
+            onFrame();
+            if (i % COARSE_STEP === 0) {
+                entry.coarseLoaded++;
+                onCoarse();
+            }
+            next();
+        };
+        img.onload = () => done(true);
+        img.onerror = () => done(false);
+        img.src = frameSrc(slide, i);
+    };
+
+    for (let k = 0; k < MAX_PARALLEL; k++) next();
+}
+
+const StoryText = ({ progress, range, title, subtitle }) => {
+    const opacity = useTransform(progress, range, [0, 1, 1, 0]);
+    const y = useTransform(progress, range, [50, 0, 0, -50]);
+    return (
+        <motion.div style={{ opacity, y }} className="scroll-text-section">
+            <h2 className="scroll-headline">{title}</h2>
+            <p className="scroll-subtitle">{subtitle}</p>
+        </motion.div>
+    );
+};
 
 export default function VoonScrollExperience() {
     const [activeSlide, setActiveSlide] = useState(0);
-    const [slidesData, setSlidesData] = useState({}); // { 0: [img...], 1: [img...] }
-    const [loading, setLoading] = useState(true);
-    const [loadProgress, setLoadProgress] = useState(0);
+    const [ready, setReady] = useState(false);
+    const [coarseProgress, setCoarseProgress] = useState(0);
+    const [buildPercent, setBuildPercent] = useState(0);
 
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    // slideIndex -> { images: Image[], coarseLoaded: number }
+    const cacheRef = useRef({});
+    const activeRef = useRef(0);
+    const progressRef = useRef(0);
 
-    const SLIDES = [
-        {
-            id: 'voonarc',
-            count: 192,
-            getFileName: (i) => `/voonarc/ezgif-frame-${(i + 1).toString().padStart(3, '0')}.jpg`
-        },
-        {
-            id: 'voonc',
-            count: 140, // 53 to 192 = 140 frames
-            getFileName: (i) => `/voonc/ezgif-frame-${(i + 53).toString().padStart(3, '0')}.jpg`
-        },
-        {
-            id: 'voona',
-            count: 131, // 37 to 167 = 131 frames
-            getFileName: (i) => `/voona/ezgif-frame-${(i + 37).toString().padStart(3, '0')}.jpg`
-        }
-    ];
-
-    // Scroll hooks
     const { scrollYProgress } = useScroll({
         target: containerRef,
-        offset: ["start start", "end end"]
+        offset: ['start start', 'end end'],
     });
 
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
-        restDelta: 0.001
+        restDelta: 0.001,
     });
 
-    // Load images for a specific slide
-    const loadSlideImages = async (slideIndex) => {
-        if (slidesData[slideIndex]) {
-            setLoading(false);
-            return; // Already loaded
+    const draw = useCallback(() => {
+        const canvas = canvasRef.current;
+        const slideIndex = activeRef.current;
+        const entry = cacheRef.current[slideIndex];
+        if (!canvas || !entry) return;
+
+        const slide = HERO_SLIDES[slideIndex];
+        const p = Math.min(1, Math.max(0, progressRef.current));
+        const target = Math.min(slide.count - 1, Math.floor(p * (slide.count - 1)));
+
+        // Fall back to the nearest frame that has finished loading.
+        let img = null;
+        for (let d = 0; d < slide.count && !img; d++) {
+            img = entry.images[target - d] || entry.images[target + d] || null;
+        }
+        if (!img) return;
+
+        const ctx = canvas.getContext('2d');
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const srcRatio = CROP.sw / CROP.sh;
+
+        let drawW, drawH;
+        if (cw / ch > srcRatio) {
+            drawW = cw;
+            drawH = cw / srcRatio;
+        } else {
+            drawH = ch;
+            drawW = ch * srcRatio;
         }
 
-        setLoading(true);
-        setLoadProgress(0);
-
-        const slide = SLIDES[slideIndex];
-        const imgArray = [];
-        let loadedCount = 0;
-
-        const promises = [];
-
-        for (let i = 0; i < slide.count; i++) {
-            const promise = new Promise((resolve, reject) => {
-                const img = new Image();
-                img.src = slide.getFileName(i);
-                img.onload = () => {
-                    imgArray[i] = img;
-                    loadedCount++;
-                    setLoadProgress((loadedCount / slide.count) * 100);
-                    resolve();
-                };
-                img.onerror = () => {
-                    // Handle error gracefully - maybe skip or use placeholder?
-                    console.warn(`Failed to load ${img.src}`);
-                    // Resolve anyway to avoid hanging
-                    imgArray[i] = null;
-                    loadedCount++;
-                    setLoadProgress((loadedCount / slide.count) * 100);
-                    resolve();
-                }
-            });
-            promises.push(promise);
-        }
-
-        await Promise.all(promises);
-
-        setSlidesData(prev => ({
-            ...prev,
-            [slideIndex]: imgArray
-        }));
-        setLoading(false);
-    };
-
-    // Initial load
-    useEffect(() => {
-        loadSlideImages(activeSlide);
-    }, [activeSlide]);
-
-    // Handle Resize
-    useEffect(() => {
-        const handleResize = () => {
-            if (canvasRef.current && canvasRef.current.parentElement) {
-                const { clientWidth, clientHeight } = canvasRef.current.parentElement;
-                canvasRef.current.width = clientWidth;
-                canvasRef.current.height = clientHeight;
-                setDimensions({ width: clientWidth, height: clientHeight });
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => window.removeEventListener('resize', handleResize);
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, CROP.sx, CROP.sy, CROP.sw, CROP.sh, (cw - drawW) / 2, (ch - drawH) / 2, drawW, drawH);
     }, []);
 
-    // Draw Frame
+    const ensureLoaded = useCallback(
+        (slideIndex) => {
+            if (cacheRef.current[slideIndex]) return;
+            const slide = HERO_SLIDES[slideIndex];
+            const entry = { images: new Array(slide.count), coarseLoaded: 0 };
+            cacheRef.current[slideIndex] = entry;
+
+            startLoading(entry, slide, {
+                onFrame: () => {
+                    if (activeRef.current === slideIndex) draw();
+                },
+                onCoarse: () => {
+                    if (activeRef.current !== slideIndex) return;
+                    setCoarseProgress(entry.coarseLoaded / coarseTotal(slide));
+                    if (entry.coarseLoaded === coarseTotal(slide)) setReady(true);
+                },
+            });
+        },
+        [draw],
+    );
+
     useEffect(() => {
-        const currentImages = slidesData[activeSlide];
-        if (loading || !canvasRef.current || !currentImages || currentImages.length === 0) return;
+        activeRef.current = activeSlide;
+        ensureLoaded(activeSlide);
+        draw();
+    }, [activeSlide, ensureLoaded, draw]);
 
-        const render = (val) => {
-            const slide = SLIDES[activeSlide];
-            const safeVal = Math.min(1, Math.max(0, val));
+    // Once the active slide is usable, warm up the next one in the background.
+    useEffect(() => {
+        if (coarseProgress >= 1) ensureLoaded((activeSlide + 1) % HERO_SLIDES.length);
+    }, [coarseProgress, activeSlide, ensureLoaded]);
 
-            // Map scroll 0-1 to frame index 0-(count-1)
-            const index = Math.min(
-                slide.count - 1,
-                Math.floor(safeVal * (slide.count - 1))
-            );
-
-            const img = currentImages[index];
-            if (!img) return;
-
-            const ctx = canvasRef.current.getContext('2d');
-            const cw = canvasRef.current.width;
-            const ch = canvasRef.current.height;
-
-            // Object cover logic
-            const imgRatio = img.width / img.height;
-            const canvasRatio = cw / ch;
-
-            let drawW, drawH, offsetX, offsetY;
-
-            if (canvasRatio > imgRatio) {
-                drawW = cw;
-                drawH = cw / imgRatio;
-                offsetX = 0;
-                offsetY = (ch - drawH) / 2;
-            } else {
-                drawH = ch;
-                drawW = ch * imgRatio;
-                offsetX = (cw - drawW) / 2;
-                offsetY = 0;
-            }
-
-            ctx.clearRect(0, 0, cw, ch);
-            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+    // Keep the canvas pixel size in sync with its box and the device pixel ratio.
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const resize = () => {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.round(canvas.clientWidth * dpr);
+            canvas.height = Math.round(canvas.clientHeight * dpr);
+            draw();
         };
+        resize();
+        const observer = new ResizeObserver(resize);
+        observer.observe(canvas);
+        return () => observer.disconnect();
+    }, [draw]);
 
-        const unsubscribe = smoothProgress.onChange(render);
-        render(smoothProgress.get());
+    useMotionValueEvent(smoothProgress, 'change', (v) => {
+        progressRef.current = v;
+        draw();
+        const pct = Math.round(Math.min(1, Math.max(0, v)) * 100);
+        setBuildPercent(pct);
+    });
 
-        return () => unsubscribe();
-    }, [loading, slidesData, activeSlide, dimensions, smoothProgress]);
+    const heroOpacity = useTransform(smoothProgress, [0, 0.07], [1, 0]);
+    const heroY = useTransform(smoothProgress, [0, 0.07], [0, -60]);
+    const heroPointer = useTransform(smoothProgress, (v) => (v > 0.06 ? 'none' : 'auto'));
 
-    // Text Animations (Existing logic)
-    const heroOpacity = useTransform(smoothProgress, [0, 0.05], [1, 0]);
-    const heroY = useTransform(smoothProgress, [0, 0.05], [0, -50]);
-
-    const s1Opacity = useTransform(smoothProgress, [0.15, 0.20, 0.30, 0.35], [0, 1, 1, 0]);
-    const s1Y = useTransform(smoothProgress, [0.15, 0.20, 0.30, 0.35], [50, 0, 0, -50]);
-
-    const s2Opacity = useTransform(smoothProgress, [0.40, 0.45, 0.55, 0.60], [0, 1, 1, 0]);
-    const s2Y = useTransform(smoothProgress, [0.40, 0.45, 0.55, 0.60], [50, 0, 0, -50]);
-
-    const s3Opacity = useTransform(smoothProgress, [0.65, 0.70, 0.80, 0.85], [0, 1, 1, 0]);
-    const s3Y = useTransform(smoothProgress, [0.65, 0.70, 0.80, 0.85], [50, 0, 0, -50]);
-
-    const s4Opacity = useTransform(smoothProgress, [0.85, 0.90, 0.98, 1.0], [0, 1, 1, 1]);
-    const s4Y = useTransform(smoothProgress, [0.85, 0.90, 0.98, 1.0], [50, 0, 0, 0]);
-
-
-    const nextSlide = () => setActiveSlide((prev) => (prev + 1) % SLIDES.length);
-    const prevSlide = () => setActiveSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    const selectSlide = (idx) => {
+        const entry = cacheRef.current[idx];
+        setCoarseProgress(entry ? entry.coarseLoaded / coarseTotal(HERO_SLIDES[idx]) : 0);
+        setActiveSlide(idx);
+    };
+    const nextSlide = () => selectSlide((activeSlide + 1) % HERO_SLIDES.length);
+    const prevSlide = () => selectSlide((activeSlide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
     return (
         <>
-            {loading && <Loader progress={loadProgress} />}
+            <AnimatePresence>{!ready && <Loader progress={coarseProgress * 100} />}</AnimatePresence>
 
-            <div
+            <section
                 ref={containerRef}
                 style={{ height: `${SCROLL_HEIGHT_VH}vh` }}
-                className="scroll-container relative"
+                className="scroll-container"
+                aria-label="VOON IQ esittely"
             >
                 <div className="sticky-viewport">
                     <canvas ref={canvasRef} className="main-canvas" />
+                    <div className="hero-vignette" aria-hidden="true" />
 
-                    {/* Navigation Arrows */}
-                    <button className="slider-nav prev" onClick={prevSlide} aria-label="Previous Slide">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M15 18l-6-6 6-6" />
-                        </svg>
-                    </button>
-                    <button className="slider-nav next" onClick={nextSlide} aria-label="Next Slide">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 18l6-6-6-6" />
-                        </svg>
-                    </button>
-
-                    {/* Dots */}
-                    <div className="slider-dots">
-                        {SLIDES.map((_, idx) => (
-                            <div
-                                key={idx}
-                                className={`slider-dot ${activeSlide === idx ? 'active' : ''}`}
-                                onClick={() => setActiveSlide(idx)}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Hero Content */}
-                    <motion.div style={{ opacity: heroOpacity, y: heroY }} className="hero-overlay">
-                        <h1 className="hero-headline">VOON MARKETING MANAGER.</h1>
-                        <p className="hero-subheadline">Markkinointi, joka toimii ennen kuin ehdit kysyä.</p>
+                    <motion.div
+                        style={{ opacity: heroOpacity, y: heroY, pointerEvents: heroPointer }}
+                        className="hero-overlay"
+                    >
+                        <motion.span
+                            className="eyebrow eyebrow--glass"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={ready ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            {HERO.eyebrow}
+                        </motion.span>
+                        <h1 className="hero-headline">
+                            {HERO.title.map((line, i) => (
+                                <motion.span
+                                    key={line}
+                                    className={i === HERO.title.length - 1 ? 'gradient-text' : undefined}
+                                    initial={{ opacity: 0, y: 40 }}
+                                    animate={ready ? { opacity: 1, y: 0 } : {}}
+                                    transition={{ duration: 0.9, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                                >
+                                    {line}
+                                </motion.span>
+                            ))}
+                        </h1>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={ready ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.9, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            <p className="hero-subheadline">{HERO.subtitle}</p>
+                            <div className="hero-ctas">
+                                <a href="#yhteys" className="btn btn-primary">
+                                    {HERO.primaryCta}
+                                    <Icon name="arrowRight" size={18} />
+                                </a>
+                                <a href="#palvelut" className="btn btn-ghost">
+                                    {HERO.secondaryCta}
+                                </a>
+                            </div>
+                        </motion.div>
                     </motion.div>
 
-                    {/* Scrolly Sections - Only show on first slide/voonarc? Or both? Assuming both for now. */}
-                    <TextSection
-                        opacity={s1Opacity} y={s1Y}
-                        title="Tämä ei ole markkinointitoimisto."
-                        subtitle="Tämä on markkinointisi ohjauskeskus."
-                    />
+                    {HERO_STORY.map((item, i) => (
+                        <StoryText
+                            key={item.title}
+                            progress={smoothProgress}
+                            range={STORY_RANGES[i]}
+                            title={item.title}
+                            subtitle={item.subtitle}
+                        />
+                    ))}
 
-                    <TextSection
-                        opacity={s2Opacity} y={s2Y}
-                        title="Tekoäly, joka tekee enemmän kuin analysoi."
-                        subtitle="Suunnittelee, tuottaa ja optimoi kampanjasi reaaliajassa."
-                    />
-
-                    <TextSection
-                        opacity={s3Opacity} y={s3Y}
-                        title="Vähemmän manuaalista työtä. Enemmän tuloksia."
-                        subtitle="Sosiaalinen media, sisällöt ja kampanjat — automaattisesti."
-                    />
-
-                    <TextSection
-                        opacity={s4Opacity} y={s4Y}
-                        title="Rakennettu suomalaisille yrityksille."
-                        subtitle="Tietoturva, läpinäkyvyys ja luotettavuus edellä."
-                    />
+                    <div className="hero-hud">
+                        <div className="hud-label">
+                            <span className="hud-index">
+                                {String(activeSlide + 1).padStart(2, '0')} / {String(HERO_SLIDES.length).padStart(2, '0')}
+                            </span>
+                            <span className="hud-title">{HERO_SLIDES[activeSlide].label}</span>
+                        </div>
+                        <div className="hud-build" aria-hidden="true">
+                            <span>{buildPercent === 0 ? HERO.scrollHint : 'Rakentuu'}</span>
+                            <div className="hud-bar">
+                                <div className="hud-bar-fill" style={{ transform: `scaleX(${buildPercent / 100})` }} />
+                            </div>
+                            <span className="hud-pct">{buildPercent}%</span>
+                        </div>
+                        <div className="hud-controls">
+                            <button className="slider-nav" onClick={prevSlide} aria-label="Edellinen konsepti">
+                                <Icon name="chevronLeft" size={20} />
+                            </button>
+                            <div className="slider-dots">
+                                {HERO_SLIDES.map((slide, idx) => (
+                                    <button
+                                        key={slide.id}
+                                        className={`slider-dot ${activeSlide === idx ? 'active' : ''}`}
+                                        onClick={() => selectSlide(idx)}
+                                        aria-label={slide.label}
+                                        aria-current={activeSlide === idx}
+                                    />
+                                ))}
+                            </div>
+                            <button className="slider-nav" onClick={nextSlide} aria-label="Seuraava konsepti">
+                                <Icon name="chevronRight" size={20} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
         </>
     );
 }

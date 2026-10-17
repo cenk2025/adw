@@ -1,0 +1,120 @@
+.services-section {
+    background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0, 240, 255, 0.06), transparent 70%),
+        var(--color-bg);
+}
+
+.services-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 700px) {
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1080px) {
+    .services-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.service-card-wrap {
+    height: 100%;
+}
+
+.service-card {
+    --mx: 50%;
+    --my: 0%;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.4s var(--ease-out);
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(420px circle at var(--mx) var(--my), rgba(0, 240, 255, 0.1), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.service-card:hover {
+    border-color: rgba(0, 240, 255, 0.3);
+    transform: translateY(-4px);
+}
+
+.service-card:hover::before {
+    opacity: 1;
+}
+
+.service-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+}
+
+.service-icon {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    color: #05070a;
+    background: var(--gradient-brand);
+    box-shadow: 0 10px 30px rgba(0, 240, 255, 0.15);
+}
+
+.service-num {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-dim);
+}
+
+.service-card h3 {
+    font-size: 1.45rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.75rem;
+}
+
+.service-card p {
+    color: var(--color-muted);
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+}
+
+.service-card ul {
+    list-style: none;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.service-card li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.93rem;
+    color: #d6dbe3;
+}
+
+.service-card li svg {
+    color: var(--color-accent);
+    flex-shrink: 0;
+}

@@ -1,0 +1,148 @@
+.pricing-section {
+    border-top: 1px solid var(--color-border);
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 30%, rgba(111, 139, 255, 0.08), transparent 70%),
+        var(--color-bg);
+}
+
+.pricing-grid {
+    display: grid;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+@media (min-width: 900px) {
+    .pricing-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.plan-wrap {
+    height: 100%;
+}
+
+.plan {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.plan--highlight {
+    border-color: transparent;
+    background:
+        linear-gradient(#0d1119, #0d1119) padding-box,
+        var(--gradient-brand) border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 30px 90px rgba(111, 139, 255, 0.18);
+}
+
+@media (min-width: 900px) {
+    .plan--highlight {
+        transform: translateY(-12px);
+    }
+}
+
+.plan-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.plan-head h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+}
+
+.plan-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #05070a;
+    background: var(--gradient-brand);
+}
+
+.plan-desc {
+    color: var(--color-muted);
+    line-height: 1.5;
+}
+
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.plan-price strong {
+    font-size: clamp(2.2rem, 3.6vw, 2.9rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+}
+
+.plan-price span {
+    color: var(--color-muted);
+}
+
+.plan ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: auto;
+}
+
+.plan li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    color: #d6dbe3;
+    line-height: 1.45;
+}
+
+.plan li svg {
+    margin-top: 0.15rem;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.plan .btn {
+    margin-top: 0.75rem;
+}
+
+.enterprise {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.75rem 2rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+}
+
+.enterprise h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.4rem;
+}
+
+.enterprise p {
+    color: var(--color-muted);
+}
+
+.pricing-note {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-dim);
+}

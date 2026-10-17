@@ -6,11 +6,13 @@ export default function Loader({ progress }) {
         <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="loader-overlay"
+            role="status"
+            aria-label="Ladataan"
         >
             <div className="loader-logo">
-                VOON
+                VOON <span>IQ</span>
             </div>
             <div className="loader-bar-container">
                 <motion.div
@@ -19,9 +21,7 @@ export default function Loader({ progress }) {
                     animate={{ width: `${progress}%` }}
                 />
             </div>
-            <div className="loader-text">
-                {Math.round(progress)}%
-            </div>
+            <div className="loader-text">{Math.round(progress)}%</div>
         </motion.div>
     );
 }
