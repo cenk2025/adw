@@ -26,8 +26,7 @@ export default function Navigation() {
         <>
             <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`} aria-label="Päävalikko">
                 <a href="#top" className="nav-logo" aria-label="VOON IQ etusivu">
-                    <img src="/voon-logo-96.webp" alt="VOON" className="nav-logo-img" width="245" height="96" />
-                    <span className="logo-iq">IQ</span>
+                    <img src="/voon-logo-96.webp" alt="VOON IQ" className="nav-logo-img" width="347" height="96" />
                 </a>
                 <div className="nav-links">
                     {NAV_LINKS.map((link) => (

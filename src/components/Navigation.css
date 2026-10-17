@@ -28,13 +28,13 @@
 }
 
 .nav-logo-img {
-    height: 30px;
+    height: 28px;
     width: auto;
     transition: height 0.3s;
 }
 
 .main-nav.scrolled .nav-logo-img {
-    height: 26px;
+    height: 24px;
 }
 
 .nav-links {

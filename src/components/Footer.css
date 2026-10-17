@@ -60,10 +60,6 @@
     width: auto;
 }
 
-.footer-logo .logo-iq {
-    font-size: 1.4rem;
-}
-
 .footer-tagline {
     max-width: 320px;
     color: var(--color-muted);

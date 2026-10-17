@@ -220,17 +220,6 @@ img {
   letter-spacing: -0.01em;
 }
 
-/* "IQ" next to the VOON logo, in the logo's own teal-to-blue */
-.logo-iq {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  background: linear-gradient(100deg, #4fd1a5 0%, #2f4fe0 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -356,10 +345,6 @@ img {
 .loader-logo img {
   height: 48px;
   width: auto;
-}
-
-.loader-logo .logo-iq {
-  font-size: 1.6rem;
 }
 
 .loader-bar-container {
