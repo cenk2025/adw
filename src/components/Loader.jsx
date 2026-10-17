@@ -12,7 +12,8 @@ export default function Loader({ progress }) {
             aria-label="Ladataan"
         >
             <div className="loader-logo">
-                VOON <span>IQ</span>
+                <img src="/voon-logo-96.webp" alt="VOON" width="245" height="96" />
+                <span className="logo-iq">IQ</span>
             </div>
             <div className="loader-bar-container">
                 <motion.div

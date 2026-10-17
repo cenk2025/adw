@@ -19,8 +19,9 @@ export default function Footer() {
             <div className="footer-content container">
                 <div className="footer-top">
                     <div className="footer-brand">
-                        <a href="#top" className="footer-logo">
-                            VOON <span>IQ</span>
+                        <a href="#top" className="footer-logo" aria-label="VOON IQ">
+                            <img src="/voon-logo-96.webp" alt="VOON" width="245" height="96" />
+                            <span className="logo-iq">IQ</span>
                         </a>
                         <p className="footer-tagline">{FOOTER.tagline}</p>
                         <a href={`mailto:${CONTACT_EMAIL}`} className="footer-email">

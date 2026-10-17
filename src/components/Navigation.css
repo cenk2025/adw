@@ -24,28 +24,17 @@
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    font-size: 1.15rem;
-    font-weight: 300;
-    letter-spacing: 0.22em;
-    color: #fff;
+    gap: 0.5rem;
 }
 
-.nav-logo span:not(.nav-logo-mark) {
-    font-weight: 700;
-    background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+.nav-logo-img {
+    height: 30px;
+    width: auto;
+    transition: height 0.3s;
 }
 
-.nav-logo-mark {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    background: var(--gradient-brand);
-    box-shadow: 0 0 18px rgba(0, 240, 255, 0.5);
-    transform: rotate(45deg);
+.main-nav.scrolled .nav-logo-img {
+    height: 26px;
 }
 
 .nav-links {

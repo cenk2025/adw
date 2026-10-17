@@ -50,17 +50,18 @@
 }
 
 .footer-logo {
-    font-size: 1.8rem;
-    font-weight: 300;
-    letter-spacing: 0.22em;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
-.footer-logo span {
-    font-weight: 700;
-    background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+.footer-logo img {
+    height: 44px;
+    width: auto;
+}
+
+.footer-logo .logo-iq {
+    font-size: 1.4rem;
 }
 
 .footer-tagline {
