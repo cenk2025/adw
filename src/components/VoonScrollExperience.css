@@ -34,6 +34,14 @@
         linear-gradient(180deg, rgba(7, 9, 13, 0.55) 0%, rgba(7, 9, 13, 0) 25%, rgba(7, 9, 13, 0) 65%, rgba(7, 9, 13, 0.95) 100%);
 }
 
+.hero-dip {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: var(--color-bg);
+}
+
 .hero-overlay,
 .scroll-text-section {
     position: absolute;
@@ -189,6 +197,12 @@
     background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
     transition: background 0.25s, border-color 0.25s, transform 0.25s;
+}
+
+.slider-nav:disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
 }
 
 .slider-nav:hover {

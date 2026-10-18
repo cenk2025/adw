@@ -3,9 +3,13 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, use
 import Loader from './Loader';
 import Icon from './Icons';
 import { HERO, HERO_SLIDES, HERO_STORY } from '../content';
+import { scrollToY } from '../lib/scroll';
 import './VoonScrollExperience.css';
 
-const SCROLL_HEIGHT_VH = 460;
+// The hero scroll is split evenly between the slides, which play one after another.
+const SLIDE_COUNT = HERO_SLIDES.length;
+const SCROLL_VH_PER_SLIDE = 300;
+const SCROLL_HEIGHT_VH = SCROLL_VH_PER_SLIDE * SLIDE_COUNT;
 
 // The source frames are 1920x1080 with baked-in letterbox bars (y < 132, y > 947)
 // and a generator watermark in the bottom-right corner. Draw only the clean area.
@@ -16,11 +20,30 @@ const COARSE_STEP = 16;
 const MAX_PARALLEL = 6;
 
 const STORY_RANGES = [
-    [0.14, 0.19, 0.3, 0.35],
-    [0.38, 0.43, 0.53, 0.58],
-    [0.61, 0.66, 0.76, 0.81],
-    [0.84, 0.89, 1, 1.01],
+    [0.06, 0.09, 0.24, 0.28],
+    [0.39, 0.42, 0.57, 0.61],
+    [0.72, 0.75, 0.84, 0.87],
+    [0.9, 0.93, 1, 1.01],
 ];
+
+// A short dip to black hides the cut where one slide hands over to the next.
+const DIP_HALF = 0.025;
+const DIP_INPUT = [0];
+const DIP_OUTPUT = [0];
+for (let k = 1; k < SLIDE_COUNT; k++) {
+    const b = k / SLIDE_COUNT;
+    DIP_INPUT.push(b - DIP_HALF, b, b + DIP_HALF);
+    DIP_OUTPUT.push(0, 1, 0);
+}
+DIP_INPUT.push(1);
+DIP_OUTPUT.push(0);
+
+// Global hero progress (0..1) -> [slide index, progress within that slide].
+const slideAt = (p) => {
+    const c = Math.min(1, Math.max(0, p)) * SLIDE_COUNT;
+    const i = Math.min(SLIDE_COUNT - 1, Math.floor(c));
+    return [i, Math.min(1, c - i)];
+};
 
 const frameSrc = (slide, i) =>
     `/${slide.id}/ezgif-frame-${String(i + slide.firstFrame).padStart(3, '0')}.jpg`;
@@ -92,6 +115,8 @@ export default function VoonScrollExperience() {
     const cacheRef = useRef({});
     const activeRef = useRef(0);
     const progressRef = useRef(0);
+    // Lets a slide's loader start the next slide without ensureLoaded referencing itself.
+    const loadNextRef = useRef(null);
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -106,12 +131,11 @@ export default function VoonScrollExperience() {
 
     const draw = useCallback(() => {
         const canvas = canvasRef.current;
-        const slideIndex = activeRef.current;
+        const [slideIndex, p] = slideAt(progressRef.current);
         const entry = cacheRef.current[slideIndex];
         if (!canvas || !entry) return;
 
         const slide = HERO_SLIDES[slideIndex];
-        const p = Math.min(1, Math.max(0, progressRef.current));
         const target = Math.min(slide.count - 1, Math.floor(p * (slide.count - 1)));
 
         // Fall back to the nearest frame that has finished loading.
@@ -151,9 +175,13 @@ export default function VoonScrollExperience() {
                     if (activeRef.current === slideIndex) draw();
                 },
                 onCoarse: () => {
-                    if (activeRef.current !== slideIndex) return;
-                    setCoarseProgress(entry.coarseLoaded / coarseTotal(slide));
-                    if (entry.coarseLoaded === coarseTotal(slide)) setReady(true);
+                    const done = entry.coarseLoaded === coarseTotal(slide);
+                    if (slideIndex === 0) {
+                        setCoarseProgress(entry.coarseLoaded / coarseTotal(slide));
+                        if (done) setReady(true);
+                    }
+                    // Chain the slides: once one is scrubbable, start loading the next.
+                    if (done && slideIndex + 1 < SLIDE_COUNT) loadNextRef.current?.(slideIndex + 1);
                 },
             });
         },
@@ -161,15 +189,10 @@ export default function VoonScrollExperience() {
     );
 
     useEffect(() => {
-        activeRef.current = activeSlide;
-        ensureLoaded(activeSlide);
+        loadNextRef.current = ensureLoaded;
+        ensureLoaded(0);
         draw();
-    }, [activeSlide, ensureLoaded, draw]);
-
-    // Once the active slide is usable, warm up the next one in the background.
-    useEffect(() => {
-        if (coarseProgress >= 1) ensureLoaded((activeSlide + 1) % HERO_SLIDES.length);
-    }, [coarseProgress, activeSlide, ensureLoaded]);
+    }, [ensureLoaded, draw]);
 
     // Keep the canvas pixel size in sync with its box and the device pixel ratio.
     useEffect(() => {
@@ -189,22 +212,32 @@ export default function VoonScrollExperience() {
 
     useMotionValueEvent(smoothProgress, 'change', (v) => {
         progressRef.current = v;
+        const [slideIndex, local] = slideAt(v);
+        if (slideIndex !== activeRef.current) {
+            activeRef.current = slideIndex;
+            setActiveSlide(slideIndex);
+            ensureLoaded(slideIndex);
+        }
         draw();
-        const pct = Math.round(Math.min(1, Math.max(0, v)) * 100);
-        setBuildPercent(pct);
+        setBuildPercent(Math.round(local * 100));
     });
 
-    const heroOpacity = useTransform(smoothProgress, [0, 0.07], [1, 0]);
-    const heroY = useTransform(smoothProgress, [0, 0.07], [0, -60]);
-    const heroPointer = useTransform(smoothProgress, (v) => (v > 0.06 ? 'none' : 'auto'));
+    const heroOpacity = useTransform(smoothProgress, [0, 0.03], [1, 0]);
+    const heroY = useTransform(smoothProgress, [0, 0.03], [0, -60]);
+    const heroPointer = useTransform(smoothProgress, (v) => (v > 0.025 ? 'none' : 'auto'));
+    const dipOpacity = useTransform(smoothProgress, DIP_INPUT, DIP_OUTPUT);
 
+    // The dots and arrows scroll to the start of a slide's part of the hero.
     const selectSlide = (idx) => {
-        const entry = cacheRef.current[idx];
-        setCoarseProgress(entry ? entry.coarseLoaded / coarseTotal(HERO_SLIDES[idx]) : 0);
-        setActiveSlide(idx);
+        const el = containerRef.current;
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        const range = el.offsetHeight - window.innerHeight;
+        const offset = idx === 0 ? 0 : (idx + DIP_HALF * SLIDE_COUNT) / SLIDE_COUNT;
+        scrollToY(top + range * offset);
     };
-    const nextSlide = () => selectSlide((activeSlide + 1) % HERO_SLIDES.length);
-    const prevSlide = () => selectSlide((activeSlide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    const nextSlide = () => selectSlide(Math.min(SLIDE_COUNT - 1, activeSlide + 1));
+    const prevSlide = () => selectSlide(Math.max(0, activeSlide - 1));
 
     return (
         <>
@@ -219,6 +252,7 @@ export default function VoonScrollExperience() {
                 <div className="sticky-viewport">
                     <canvas ref={canvasRef} className="main-canvas" />
                     <div className="hero-vignette" aria-hidden="true" />
+                    <motion.div className="hero-dip" style={{ opacity: dipOpacity }} aria-hidden="true" />
 
                     <motion.div
                         style={{ opacity: heroOpacity, y: heroY, pointerEvents: heroPointer }}
@@ -281,14 +315,19 @@ export default function VoonScrollExperience() {
                             <span className="hud-title">{HERO_SLIDES[activeSlide].label}</span>
                         </div>
                         <div className="hud-build" aria-hidden="true">
-                            <span>{buildPercent === 0 ? HERO.scrollHint : 'Rakentuu'}</span>
+                            <span>{activeSlide === 0 && buildPercent === 0 ? HERO.scrollHint : 'Rakentuu'}</span>
                             <div className="hud-bar">
                                 <div className="hud-bar-fill" style={{ transform: `scaleX(${buildPercent / 100})` }} />
                             </div>
                             <span className="hud-pct">{buildPercent}%</span>
                         </div>
                         <div className="hud-controls">
-                            <button className="slider-nav" onClick={prevSlide} aria-label="Edellinen konsepti">
+                            <button
+                                className="slider-nav"
+                                onClick={prevSlide}
+                                disabled={activeSlide === 0}
+                                aria-label="Edellinen konsepti"
+                            >
                                 <Icon name="chevronLeft" size={20} />
                             </button>
                             <div className="slider-dots">
@@ -302,7 +341,12 @@ export default function VoonScrollExperience() {
                                     />
                                 ))}
                             </div>
-                            <button className="slider-nav" onClick={nextSlide} aria-label="Seuraava konsepti">
+                            <button
+                                className="slider-nav"
+                                onClick={nextSlide}
+                                disabled={activeSlide === SLIDE_COUNT - 1}
+                                aria-label="Seuraava konsepti"
+                            >
                                 <Icon name="chevronRight" size={20} />
                             </button>
                         </div>

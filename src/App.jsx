@@ -14,6 +14,7 @@ import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
+import { setLenis } from './lib/scroll';
 import './index.css';
 
 export default function App() {
@@ -32,6 +33,8 @@ export default function App() {
             anchors: { offset: -80 },
         });
 
+        setLenis(lenis);
+
         let frame;
         function raf(time) {
             lenis.raf(time);
@@ -41,6 +44,7 @@ export default function App() {
 
         return () => {
             cancelAnimationFrame(frame);
+            setLenis(null);
             lenis.destroy();
         };
     }, []);
