@@ -96,8 +96,9 @@ export default async function handler(req, res) {
         });
 
         if (error) {
-            console.error('Resend error:', error);
-            return res.status(500).json({ error: 'Failed to send email' });
+            console.error('Resend error:', error, 'from:', FROM_ADDRESS);
+            // Resend's error type (e.g. invalid_api_key, validation_error) holds no secrets and makes misconfiguration visible.
+            return res.status(500).json({ error: 'Failed to send email', code: error.name, detail: error.message });
         }
 
         // The team notification already went out, so a failed auto-reply must not fail the request.
