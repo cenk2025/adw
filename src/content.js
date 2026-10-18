@@ -302,8 +302,8 @@ export const PRICING = {
         },
         {
             name: 'Web',
-            price: 'alkaen 2 900 €',
-            period: 'projekti',
+            price: 'Sopimuksen mukaan',
+            period: 'räätälöity tarjous',
             desc: 'Verkkosivu tai web-sovellus avaimet käteen.',
             features: [
                 'Responsiivinen sivusto tai sovellus',
