@@ -30,7 +30,7 @@
     z-index: 2;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 80% 70% at 50% 45%, rgba(7, 9, 13, 0.15) 0%, rgba(7, 9, 13, 0.65) 100%),
+        radial-gradient(ellipse 70% 60% at 50% 48%, rgba(7, 9, 13, 0.4) 0%, rgba(7, 9, 13, 0.2) 55%, rgba(7, 9, 13, 0.65) 100%),
         linear-gradient(180deg, rgba(7, 9, 13, 0.55) 0%, rgba(7, 9, 13, 0) 25%, rgba(7, 9, 13, 0) 65%, rgba(7, 9, 13, 0.95) 100%);
 }
 
@@ -78,6 +78,13 @@
     font-weight: 400;
     letter-spacing: -0.02em;
     padding-bottom: 0.08em;
+    /* A lighter take on the brand gradient so the line stays readable over the photo.
+       text-shadow would show through the transparent glyphs, so the shadow is a filter. */
+    background: linear-gradient(100deg, #9ffcff 0%, #c3cdff 50%, #e6d2ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)) drop-shadow(0 8px 28px rgba(0, 0, 0, 0.45));
 }
 
 .hero-subheadline {
