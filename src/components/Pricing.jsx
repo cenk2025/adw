@@ -1,17 +1,20 @@
 import React from 'react';
 import Reveal, { SectionHead } from './Reveal';
 import Icon from './Icons';
-import { PRICING } from '../content';
+import { useI18n } from '../i18n/context';
 import './Pricing.css';
 
 export default function Pricing({ onSelectPlan }) {
+    const { t } = useI18n();
+    const pricing = t.pricing;
+
     return (
         <section id="hinnat" className="section pricing-section">
             <div className="container">
-                <SectionHead eyebrow={PRICING.eyebrow} title={PRICING.title} subtitle={PRICING.subtitle} align="center" />
+                <SectionHead eyebrow={pricing.eyebrow} title={pricing.title} subtitle={pricing.subtitle} align="center" />
 
                 <div className="pricing-grid">
-                    {PRICING.plans.map((plan, i) => (
+                    {pricing.plans.map((plan, i) => (
                         <Reveal key={plan.name} delay={0.07 * i} className="plan-wrap">
                             <article className={`plan ${plan.highlight ? 'plan--highlight' : ''}`}>
                                 <div className="plan-head">
@@ -34,9 +37,9 @@ export default function Pricing({ onSelectPlan }) {
                                 <a
                                     href="#yhteys"
                                     className={`btn btn-block ${plan.highlight ? 'btn-gradient' : 'btn-ghost'}`}
-                                    onClick={() => onSelectPlan(plan.need)}
+                                    onClick={() => onSelectPlan(plan.needIndex)}
                                 >
-                                    Valitse {plan.name}
+                                    {pricing.choose} {plan.name}
                                     <Icon name="arrowRight" size={18} />
                                 </a>
                             </article>
@@ -46,16 +49,16 @@ export default function Pricing({ onSelectPlan }) {
 
                 <Reveal className="enterprise">
                     <div>
-                        <h3>{PRICING.enterprise.title}</h3>
-                        <p>{PRICING.enterprise.body}</p>
+                        <h3>{pricing.enterprise.title}</h3>
+                        <p>{pricing.enterprise.body}</p>
                     </div>
-                    <a href="#yhteys" className="btn btn-primary" onClick={() => onSelectPlan('')}>
-                        {PRICING.enterprise.cta}
+                    <a href="#yhteys" className="btn btn-primary" onClick={() => onSelectPlan(null)}>
+                        {pricing.enterprise.cta}
                         <Icon name="arrowRight" size={18} />
                     </a>
                 </Reveal>
 
-                <p className="pricing-note">{PRICING.note}</p>
+                <p className="pricing-note">{pricing.note}</p>
             </div>
         </section>
     );

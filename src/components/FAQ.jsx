@@ -2,23 +2,21 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Reveal, { SectionHead } from './Reveal';
 import Icon from './Icons';
-import { FAQ as ITEMS } from '../content';
+import { useI18n } from '../i18n/context';
 import './FAQ.css';
 
 export default function FAQ() {
+    const { t } = useI18n();
+    const faq = t.faq;
     const [open, setOpen] = useState(0);
 
     return (
         <section id="ukk" className="section faq-section">
             <div className="container faq-grid">
-                <SectionHead
-                    eyebrow="UKK"
-                    title="Usein kysyttyä."
-                    subtitle="Etkö löytänyt vastausta? Kysy suoraan, vastaamme mielellämme."
-                />
+                <SectionHead eyebrow={faq.eyebrow} title={faq.title} subtitle={faq.subtitle} />
 
                 <div className="faq-list">
-                    {ITEMS.map((item, i) => {
+                    {faq.items.map((item, i) => {
                         const isOpen = open === i;
                         return (
                             <Reveal key={item.q} delay={0.04 * i} className={`faq-item ${isOpen ? 'open' : ''}`}>

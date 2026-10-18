@@ -6,7 +6,35 @@ import { Resend } from 'resend';
 const FROM_ADDRESS = process.env.RESEND_FROM || 'VOON IQ <onboarding@resend.dev>';
 const TO_ADDRESS = process.env.CONTACT_TO || 'info@voon.fi';
 
-const LIMITS = { company: 120, name: 120, email: 160, phone: 40, need: 80, budget: 40, message: 4000 };
+const LIMITS = { company: 120, name: 120, email: 160, phone: 40, need: 80, budget: 40, message: 4000, locale: 2 };
+
+// Auto-reply in the language the visitor used on the site.
+const AUTO_REPLY = {
+    fi: {
+        subject: 'Kiitos yhteydenotostasi – VOON IQ',
+        heading: 'Kiitos yhteydenotostasi!',
+        greeting: 'Hei',
+        body: 'Olemme vastaanottaneet viestisi. Käymme sen läpi ja palaamme sinuun yleensä <b>1–2 arkipäivän kuluessa</b> sopiaksemme maksuttoman kartoituksen.',
+        labels: ['Yritys', 'Tarve', 'Viesti'],
+        urgent: 'Kiirellisissä asioissa voit vastata tähän viestiin tai kirjoittaa osoitteeseen',
+    },
+    en: {
+        subject: 'Thank you for contacting us – VOON IQ',
+        heading: 'Thank you for getting in touch!',
+        greeting: 'Hi',
+        body: 'We have received your message. We will go through it and usually get back to you <b>within 1–2 business days</b> to arrange a free consultation.',
+        labels: ['Company', 'Need', 'Message'],
+        urgent: 'For anything urgent, you can reply to this email or write to',
+    },
+    sv: {
+        subject: 'Tack för att du kontaktade oss – VOON IQ',
+        heading: 'Tack för att du hörde av dig!',
+        greeting: 'Hej',
+        body: 'Vi har tagit emot ditt meddelande. Vi går igenom det och återkommer vanligtvis <b>inom 1–2 arbetsdagar</b> för att boka en kostnadsfri kartläggning.',
+        labels: ['Företag', 'Behov', 'Meddelande'],
+        urgent: 'I brådskande ärenden kan du svara på det här meddelandet eller skriva till',
+    },
+};
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const escapeHtml = (value) =>
@@ -90,6 +118,7 @@ export default async function handler(req, res) {
                     ${row('Tarve', data.need)}
                     ${row('Budjetti', data.budget)}
                     ${row('Viesti', data.message)}
+                    ${row('Kieli', data.locale)}
                 </table>
                 <p style="margin-top:24px;color:#6b7383;font-size:12px">Lähetetty ${escapeHtml(submitted)}</p>`,
             ),
@@ -101,24 +130,24 @@ export default async function handler(req, res) {
         }
 
         // The team notification already went out, so a failed auto-reply must not fail the request.
+        const reply = AUTO_REPLY[data.locale] || AUTO_REPLY.fi;
         const { error: replyError } = await resend.emails.send({
             from: FROM_ADDRESS,
             to: data.email,
-            subject: 'Kiitos yhteydenotostasi – VOON IQ',
+            subject: reply.subject,
             html: shell(
-                'Kiitos yhteydenotostasi!',
-                `<p style="font-size:17px;color:#0b0f16">Hei ${escapeHtml(data.name)},</p>
-                <p style="color:#3b4250;line-height:1.7">Olemme vastaanottaneet viestisi. Käymme sen läpi ja palaamme sinuun
-                yleensä <b>1–2 arkipäivän kuluessa</b> sopiaksemme maksuttoman kartoituksen.</p>
+                reply.heading,
+                `<p style="font-size:17px;color:#0b0f16">${reply.greeting} ${escapeHtml(data.name)},</p>
+                <p style="color:#3b4250;line-height:1.7">${reply.body}</p>
                 <div style="margin:24px 0;padding:18px 20px;background:#f3f5f8;border-left:4px solid #00c2d1;border-radius:8px">
                     <table style="width:100%;border-collapse:collapse">
-                        ${row('Yritys', data.company)}
-                        ${row('Tarve', data.need)}
-                        ${row('Viesti', data.message)}
+                        ${row(reply.labels[0], data.company)}
+                        ${row(reply.labels[1], data.need)}
+                        ${row(reply.labels[2], data.message)}
                     </table>
                 </div>
-                <p style="color:#3b4250;line-height:1.7">Kiirellisissä asioissa voit vastata tähän viestiin tai kirjoittaa
-                osoitteeseen <a href="mailto:info@voon.fi" style="color:#0096a3">info@voon.fi</a>.</p>
+                <p style="color:#3b4250;line-height:1.7">${reply.urgent}
+                <a href="mailto:info@voon.fi" style="color:#0096a3">info@voon.fi</a>.</p>
                 <p style="color:#6b7383;font-size:13px;margin-top:28px">VOON IQ Oy · Jyväskylä · voon.fi</p>`,
             ),
         });

@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 'framer-motion';
 import Loader from './Loader';
 import Icon from './Icons';
-import { HERO, HERO_SLIDES, HERO_STORY } from '../content';
+import { useI18n } from '../i18n/context';
+import { HERO_SLIDES } from '../i18n/shared';
 import { scrollToY } from '../lib/scroll';
 import './VoonScrollExperience.css';
 
@@ -104,6 +105,8 @@ const StoryText = ({ progress, range, title, subtitle }) => {
 };
 
 export default function VoonScrollExperience() {
+    const { t } = useI18n();
+    const hero = t.hero;
     const [activeSlide, setActiveSlide] = useState(0);
     const [ready, setReady] = useState(false);
     const [coarseProgress, setCoarseProgress] = useState(0);
@@ -247,7 +250,7 @@ export default function VoonScrollExperience() {
                 ref={containerRef}
                 style={{ height: `${SCROLL_HEIGHT_VH}vh` }}
                 className="scroll-container"
-                aria-label="VOON IQ esittely"
+                aria-label={hero.aria}
             >
                 <div className="sticky-viewport">
                     <canvas ref={canvasRef} className="main-canvas" />
@@ -264,13 +267,13 @@ export default function VoonScrollExperience() {
                             animate={ready ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {HERO.eyebrow}
+                            {hero.eyebrow}
                         </motion.span>
                         <h1 className="hero-headline">
-                            {HERO.title.map((line, i) => (
+                            {hero.title.map((line, i) => (
                                 <motion.span
                                     key={line}
-                                    className={i === HERO.title.length - 1 ? 'gradient-text' : undefined}
+                                    className={i === hero.title.length - 1 ? 'gradient-text' : undefined}
                                     initial={{ opacity: 0, y: 40 }}
                                     animate={ready ? { opacity: 1, y: 0 } : {}}
                                     transition={{ duration: 0.9, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
@@ -284,20 +287,20 @@ export default function VoonScrollExperience() {
                             animate={ready ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.9, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            <p className="hero-subheadline">{HERO.subtitle}</p>
+                            <p className="hero-subheadline">{hero.subtitle}</p>
                             <div className="hero-ctas">
                                 <a href="#yhteys" className="btn btn-primary">
-                                    {HERO.primaryCta}
+                                    {hero.primaryCta}
                                     <Icon name="arrowRight" size={18} />
                                 </a>
                                 <a href="#palvelut" className="btn btn-ghost">
-                                    {HERO.secondaryCta}
+                                    {hero.secondaryCta}
                                 </a>
                             </div>
                         </motion.div>
                     </motion.div>
 
-                    {HERO_STORY.map((item, i) => (
+                    {hero.story.map((item, i) => (
                         <StoryText
                             key={item.title}
                             progress={smoothProgress}
@@ -312,10 +315,10 @@ export default function VoonScrollExperience() {
                             <span className="hud-index">
                                 {String(activeSlide + 1).padStart(2, '0')} / {String(HERO_SLIDES.length).padStart(2, '0')}
                             </span>
-                            <span className="hud-title">{HERO_SLIDES[activeSlide].label}</span>
+                            <span className="hud-title">{hero.slides[activeSlide]}</span>
                         </div>
                         <div className="hud-build" aria-hidden="true">
-                            <span>{activeSlide === 0 && buildPercent === 0 ? HERO.scrollHint : 'Rakentuu'}</span>
+                            <span>{activeSlide === 0 && buildPercent === 0 ? hero.scrollHint : hero.building}</span>
                             <div className="hud-bar">
                                 <div className="hud-bar-fill" style={{ transform: `scaleX(${buildPercent / 100})` }} />
                             </div>
@@ -326,7 +329,7 @@ export default function VoonScrollExperience() {
                                 className="slider-nav"
                                 onClick={prevSlide}
                                 disabled={activeSlide === 0}
-                                aria-label="Edellinen konsepti"
+                                aria-label={hero.prev}
                             >
                                 <Icon name="chevronLeft" size={20} />
                             </button>
@@ -336,7 +339,7 @@ export default function VoonScrollExperience() {
                                         key={slide.id}
                                         className={`slider-dot ${activeSlide === idx ? 'active' : ''}`}
                                         onClick={() => selectSlide(idx)}
-                                        aria-label={slide.label}
+                                        aria-label={hero.slides[idx]}
                                         aria-current={activeSlide === idx}
                                     />
                                 ))}
@@ -345,7 +348,7 @@ export default function VoonScrollExperience() {
                                 className="slider-nav"
                                 onClick={nextSlide}
                                 disabled={activeSlide === SLIDE_COUNT - 1}
-                                aria-label="Seuraava konsepti"
+                                aria-label={hero.next}
                             >
                                 <Icon name="chevronRight" size={20} />
                             </button>

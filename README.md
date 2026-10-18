@@ -5,7 +5,8 @@ tekoälypohjaiset markkinointi-, visuaali- ja web-palvelut.
 
 ## Rakenne
 
-- `src/content.js` – kaikki sivuston tekstit, hinnat ja UKK yhdessä paikassa.
+- `src/i18n/` – sivuston tekstit kolmella kielellä: `fi.js` (oletus, `/`), `en.js` (`/en`) ja `sv.js` (`/sv`).
+  Kielestä riippumaton data (kuvat, tuotelinkit, hero-kuvasarjat) on tiedostossa `shared.js`.
 - `src/components/` – osiot (hero, palvelut, AI-studio, työt, web, prosessi, hinnat, UKK, yhteys, footer).
 - `src/components/VoonScrollExperience.jsx` – vierityksellä ohjattu hero. Kuvasarjat ovat kansioissa
   `public/voonarc`, `public/voonc` ja `public/voona`; reunojen mustat palkit ja vesileima rajataan pois piirrettäessä.

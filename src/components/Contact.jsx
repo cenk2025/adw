@@ -2,24 +2,30 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Reveal from './Reveal';
 import Icon from './Icons';
-import { CONTACT, CONTACT_EMAIL } from '../content';
+import { useI18n } from '../i18n/context';
+import { CONTACT_EMAIL } from '../i18n/shared';
 import './Contact.css';
 
 export default function Contact({ presetNeed }) {
+    const { t, locale } = useI18n();
+    const contact = t.contact;
+    const fields = contact.fields;
+
     const [status, setStatus] = useState('idle'); // idle | loading | success | error
-    const [need, setNeed] = useState(presetNeed || CONTACT.needs[0]);
+    // The selected need is kept as an index so it survives a language switch.
+    const [need, setNeed] = useState(presetNeed ?? 0);
     const [prevPreset, setPrevPreset] = useState(presetNeed);
 
     // Follow the plan picked in the pricing section.
     if (presetNeed !== prevPreset) {
         setPrevPreset(presetNeed);
-        if (presetNeed) setNeed(presetNeed);
+        if (presetNeed != null) setNeed(presetNeed);
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const form = e.currentTarget;
-        const data = Object.fromEntries(new FormData(form).entries());
+        const data = { ...Object.fromEntries(new FormData(form).entries()), need: contact.needs[need], locale };
         setStatus('loading');
 
         try {
@@ -30,7 +36,7 @@ export default function Contact({ presetNeed }) {
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             form.reset();
-            setNeed(CONTACT.needs[0]);
+            setNeed(0);
             setStatus('success');
         } catch (error) {
             console.error('Error sending contact form:', error);
@@ -46,15 +52,15 @@ export default function Contact({ presetNeed }) {
             <div className="container contact-grid">
                 <div className="contact-copy">
                     <Reveal>
-                        <span className="eyebrow">{CONTACT.eyebrow}</span>
+                        <span className="eyebrow">{contact.eyebrow}</span>
                     </Reveal>
                     <Reveal delay={0.05}>
                         <h2 className="contact-title">
-                            Kerro tavoitteesi. <span className="serif gradient-text">Me teemme siitä suunnitelman.</span>
+                            {contact.titleStart} <span className="serif gradient-text">{contact.titleAccent}</span>
                         </h2>
                     </Reveal>
                     <Reveal delay={0.1}>
-                        <p className="section-subtitle">{CONTACT.subtitle}</p>
+                        <p className="section-subtitle">{contact.subtitle}</p>
                     </Reveal>
 
                     <Reveal delay={0.15} className="contact-cards">
@@ -63,7 +69,7 @@ export default function Contact({ presetNeed }) {
                                 <Icon name="mail" size={20} />
                             </span>
                             <span>
-                                <small>Sähköposti</small>
+                                <small>{contact.cards.email}</small>
                                 {CONTACT_EMAIL}
                             </span>
                         </a>
@@ -72,8 +78,8 @@ export default function Contact({ presetNeed }) {
                                 <Icon name="pin" size={20} />
                             </span>
                             <span>
-                                <small>Sijainti</small>
-                                Jyväskylä, Suomi
+                                <small>{contact.cards.location}</small>
+                                {contact.cards.locationValue}
                             </span>
                         </div>
                         <a href="https://voon.fi" target="_blank" rel="noopener noreferrer" className="contact-card">
@@ -81,7 +87,7 @@ export default function Contact({ presetNeed }) {
                                 <Icon name="globe" size={20} />
                             </span>
                             <span>
-                                <small>Pääsivusto</small>
+                                <small>{contact.cards.site}</small>
                                 voon.fi
                             </span>
                         </a>
@@ -102,10 +108,10 @@ export default function Contact({ presetNeed }) {
                                 <span className="form-result-icon">
                                     <Icon name="check" size={36} strokeWidth={2.4} />
                                 </span>
-                                <h3>{CONTACT.success}</h3>
-                                <p>{CONTACT.successBody}</p>
+                                <h3>{contact.success}</h3>
+                                <p>{contact.successBody}</p>
                                 <button className="btn btn-ghost" onClick={() => setStatus('idle')}>
-                                    Lähetä uusi viesti
+                                    {contact.newMessage}
                                 </button>
                             </motion.div>
                         ) : (
@@ -119,36 +125,36 @@ export default function Contact({ presetNeed }) {
                             >
                                 <div className="form-row">
                                     <label className="field">
-                                        <span>Yritys *</span>
-                                        <input name="company" required maxLength={120} autoComplete="organization" placeholder="Yritys Oy" />
+                                        <span>{fields.company} *</span>
+                                        <input name="company" required maxLength={120} autoComplete="organization" placeholder={fields.companyPlaceholder} />
                                     </label>
                                     <label className="field">
-                                        <span>Nimi *</span>
-                                        <input name="name" required maxLength={120} autoComplete="name" placeholder="Etunimi Sukunimi" />
+                                        <span>{fields.name} *</span>
+                                        <input name="name" required maxLength={120} autoComplete="name" placeholder={fields.namePlaceholder} />
                                     </label>
                                 </div>
                                 <div className="form-row">
                                     <label className="field">
-                                        <span>Sähköposti *</span>
-                                        <input name="email" type="email" required maxLength={160} autoComplete="email" placeholder="nimi@yritys.fi" />
+                                        <span>{fields.email} *</span>
+                                        <input name="email" type="email" required maxLength={160} autoComplete="email" placeholder={fields.emailPlaceholder} />
                                     </label>
                                     <label className="field">
-                                        <span>Puhelin</span>
-                                        <input name="phone" type="tel" maxLength={40} autoComplete="tel" placeholder="+358 40 123 4567" />
+                                        <span>{fields.phone}</span>
+                                        <input name="phone" type="tel" maxLength={40} autoComplete="tel" placeholder={fields.phonePlaceholder} />
                                     </label>
                                 </div>
 
                                 <fieldset className="field">
-                                    <legend>Mihin tarvitset apua? *</legend>
+                                    <legend>{fields.need} *</legend>
                                     <div className="need-options">
-                                        {CONTACT.needs.map((option) => (
-                                            <label key={option} className={`need-option ${need === option ? 'selected' : ''}`}>
+                                        {contact.needs.map((option, i) => (
+                                            <label key={option} className={`need-option ${need === i ? 'selected' : ''}`}>
                                                 <input
                                                     type="radio"
-                                                    name="need"
-                                                    value={option}
-                                                    checked={need === option}
-                                                    onChange={() => setNeed(option)}
+                                                    name="needChoice"
+                                                    value={i}
+                                                    checked={need === i}
+                                                    onChange={() => setNeed(i)}
                                                 />
                                                 {option}
                                             </label>
@@ -157,10 +163,10 @@ export default function Contact({ presetNeed }) {
                                 </fieldset>
 
                                 <label className="field">
-                                    <span>Arvioitu budjetti</span>
+                                    <span>{fields.budget}</span>
                                     <select name="budget" defaultValue="">
-                                        <option value="">Valitse (vapaaehtoinen)</option>
-                                        {CONTACT.budgets.map((b) => (
+                                        <option value="">{fields.budgetPlaceholder}</option>
+                                        {contact.budgets.map((b) => (
                                             <option key={b} value={b}>
                                                 {b}
                                             </option>
@@ -169,34 +175,26 @@ export default function Contact({ presetNeed }) {
                                 </label>
 
                                 <label className="field">
-                                    <span>Viesti</span>
-                                    <textarea
-                                        name="message"
-                                        rows={4}
-                                        maxLength={4000}
-                                        placeholder="Kerro lyhyesti yrityksestäsi, tavoitteistasi ja aikataulusta."
-                                    />
+                                    <span>{fields.message}</span>
+                                    <textarea name="message" rows={4} maxLength={4000} placeholder={fields.messagePlaceholder} />
                                 </label>
 
                                 {/* Honeypot: hidden from people, filled in by naive bots. */}
                                 <label className="hp" aria-hidden="true">
-                                    Verkkosivu
+                                    {fields.website}
                                     <input name="website" tabIndex={-1} autoComplete="off" />
                                 </label>
 
                                 <label className="consent">
                                     <input type="checkbox" name="consent" value="yes" required />
-                                    <span>
-                                        Hyväksyn, että VOON IQ käyttää tietojani yhteydenottoon vastaamiseen. Tietoja ei
-                                        luovuteta kolmansille osapuolille.
-                                    </span>
+                                    <span>{fields.consent}</span>
                                 </label>
 
                                 {status === 'error' && (
                                     <div className="form-error" role="alert">
                                         <Icon name="alert" size={18} />
                                         <span>
-                                            <strong>{CONTACT.error}</strong> {CONTACT.errorBody}
+                                            <strong>{contact.error}</strong> {contact.errorBody}
                                         </span>
                                     </div>
                                 )}
@@ -204,11 +202,11 @@ export default function Contact({ presetNeed }) {
                                 <button type="submit" className="btn btn-gradient btn-block" disabled={status === 'loading'}>
                                     {status === 'loading' ? (
                                         <>
-                                            <span className="spinner" aria-hidden="true" /> Lähetetään…
+                                            <span className="spinner" aria-hidden="true" /> {contact.sending}
                                         </>
                                     ) : (
                                         <>
-                                            Lähetä viesti
+                                            {contact.submit}
                                             <Icon name="arrowRight" size={18} />
                                         </>
                                     )}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Icon from './Icons';
+import { useI18n } from '../i18n/context';
 import './CookieConsent.css';
 
 const STORAGE_KEY = 'voon_cookie_consent';
@@ -22,6 +23,7 @@ const writeConsent = (value) => {
 };
 
 export default function CookieConsent() {
+    const { t } = useI18n();
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -53,26 +55,22 @@ export default function CookieConsent() {
                     exit={{ opacity: 0, y: 40 }}
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 >
-                    <div className="cookie-modal" role="dialog" aria-label="Evästeasetukset">
+                    <div className="cookie-modal" role="dialog" aria-label={t.cookie.aria}>
                         <div className="cookie-content">
                             <span className="cookie-icon">
                                 <Icon name="cookie" size={24} />
                             </span>
                             <div className="cookie-text">
-                                <h3>Käytämme evästeitä</h3>
-                                <p>
-                                    Sivusto käyttää vain toiminnan kannalta välttämättömiä tietoja. Mahdollinen
-                                    analytiikka otetaan käyttöön vain suostumuksellasi. Voit muuttaa valintaasi
-                                    milloin tahansa sivun alaosasta.
-                                </p>
+                                <h3>{t.cookie.title}</h3>
+                                <p>{t.cookie.body}</p>
                             </div>
                         </div>
                         <div className="cookie-actions">
                             <button onClick={() => choose('declined')} className="btn-decline">
-                                Vain välttämättömät
+                                {t.cookie.decline}
                             </button>
                             <button onClick={() => choose('accepted')} className="btn-accept">
-                                Hyväksy kaikki
+                                {t.cookie.accept}
                             </button>
                         </div>
                     </div>

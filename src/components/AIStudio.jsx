@@ -2,10 +2,31 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { SectionHead } from './Reveal';
 import Icon from './Icons';
-import { STUDIO } from '../content';
+import { useI18n } from '../i18n/context';
 import './AIStudio.css';
 
 const STEP_MS = 6500;
+
+// Illustrative shapes only: bar lengths, channel widths and column heights carry no real data.
+const SHARE_WIDTHS = [0.82, 0.64, 0.31, 0.22];
+const YOUR_BRAND = 2;
+const CHANNELS = [
+    [40, '#00f0ff'],
+    [30, '#6f8bff'],
+    [20, '#b06bff'],
+    [10, '#c6ff5c'],
+];
+const POSTS = [
+    [0, '#00f0ff', '18:00'],
+    [1, '#6f8bff', null],
+    [2, '#b06bff', '20:30'],
+    [3, '#00f0ff', '12:00'],
+    [4, '#c6ff5c', '08:00'],
+    [5, '#00f0ff', '11:00'],
+    [6, '#b06bff', '19:00'],
+];
+const COLUMNS = [22, 28, 26, 35, 41, 39, 52, 61];
+const KPI_ICONS = ['cursor', 'coins', 'target'];
 
 const bar = (delay) => ({
     initial: { scaleX: 0 },
@@ -19,12 +40,14 @@ const rise = (delay) => ({
     transition: { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] },
 });
 
-const ResearchPanel = () => (
+const ResearchPanel = ({ s }) => (
     <div className="panel-grid">
         <motion.div className="panel-card span-2" {...rise(0)}>
             <div className="panel-card-head">
-                <span>Hakukiinnostus · premium-suklaa</span>
-                <span className="tag tag--up">+34 % / v</span>
+                <span>{s.research.interest}</span>
+                <span className="tag tag--up">
+                    <Icon name="trendUp" size={13} strokeWidth={2.2} /> {s.research.trend}
+                </span>
             </div>
             <svg viewBox="0 0 300 80" className="spark" preserveAspectRatio="none">
                 <motion.path
@@ -47,46 +70,42 @@ const ResearchPanel = () => (
         </motion.div>
         <motion.div className="panel-card" {...rise(0.1)}>
             <div className="panel-card-head">
-                <span>Näkyvyysosuus</span>
+                <span>{s.research.share}</span>
             </div>
-            {[
-                ['Kilpailija A', 0.82],
-                ['Kilpailija B', 0.64],
-                ['Sinun brändisi', 0.31],
-                ['Kilpailija C', 0.22],
-            ].map(([name, v], i) => (
-                <div key={name} className={`hbar ${name === 'Sinun brändisi' ? 'hbar--you' : ''}`}>
+            {s.research.competitors.map((name, i) => (
+                <div key={name} className={`hbar ${i === YOUR_BRAND ? 'hbar--you' : ''}`}>
                     <span>{name}</span>
                     <div className="hbar-track">
-                        <motion.div className="hbar-fill" style={{ width: `${v * 100}%` }} {...bar(0.2 + i * 0.1)} />
+                        <motion.div className="hbar-fill" style={{ width: `${SHARE_WIDTHS[i] * 100}%` }} {...bar(0.2 + i * 0.1)} />
                     </div>
                 </div>
             ))}
         </motion.div>
         <motion.div className="panel-card" {...rise(0.2)}>
             <div className="panel-card-head">
-                <span>Asiakkaiden kieli</span>
+                <span>{s.research.language}</span>
             </div>
             <div className="chips">
-                {['laadukas', 'lahjaksi', 'reilu kauppa', 'vegaaninen', 'kotimainen', 'liian kallis'].map((w, i) => (
-                    <motion.span key={w} className={`chip ${w === 'liian kallis' ? 'chip--warn' : ''}`} {...rise(0.3 + i * 0.05)}>
+                {s.research.words.map((w, i) => (
+                    <motion.span
+                        key={w}
+                        className={`chip ${i === s.research.words.length - 1 ? 'chip--warn' : ''}`}
+                        {...rise(0.3 + i * 0.05)}
+                    >
                         {w}
                     </motion.span>
                 ))}
             </div>
             <p className="panel-insight">
-                <Icon name="sparkles" size={14} /> Mahdollisuus: lahjapakkaukset ennen joulua.
+                <Icon name="sparkles" size={14} /> {s.research.insight}
             </p>
         </motion.div>
     </div>
 );
 
-const PlanPanel = () => (
+const PlanPanel = ({ s }) => (
     <div className="panel-grid">
-        {[
-            { name: 'Laatutietoinen lahjanantaja', meta: '30–45 v · kaupunki · Instagram' },
-            { name: 'Arjen herkuttelija', meta: '20–35 v · opiskelija · TikTok' },
-        ].map((p, i) => (
+        {s.plan.personas.map((p, i) => (
             <motion.div key={p.name} className="panel-card persona" {...rise(i * 0.1)}>
                 <span className="persona-avatar">{p.name[0]}</span>
                 <div>
@@ -97,82 +116,65 @@ const PlanPanel = () => (
         ))}
         <motion.div className="panel-card span-2" {...rise(0.2)}>
             <div className="panel-card-head">
-                <span>Kanavajako</span>
-                <span className="tag">Budjetti 1 500 € / kk</span>
+                <span>{s.plan.channels}</span>
             </div>
             <div className="stack-bar">
-                {[
-                    ['Instagram', 40, '#00f0ff'],
-                    ['Google', 30, '#6f8bff'],
-                    ['TikTok', 20, '#b06bff'],
-                    ['Uutiskirje', 10, '#c6ff5c'],
-                ].map(([name, v, c], i) => (
+                {CHANNELS.map(([width, color], i) => (
                     <motion.div
-                        key={name}
+                        key={color + i}
                         className="stack-seg"
-                        style={{ flexBasis: `${v}%`, background: c, transformOrigin: 'left' }}
+                        style={{ flexBasis: `${width}%`, background: color, transformOrigin: 'left' }}
                         {...bar(0.3 + i * 0.12)}
                     >
-                        <span>
-                            {name} {v} %
-                        </span>
+                        <span>{s.plan.channelNames[i]}</span>
                     </motion.div>
                 ))}
             </div>
         </motion.div>
         <motion.blockquote className="panel-card span-2 quote" {...rise(0.4)}>
-            <span>Ydinviesti</span>
-            ”Pieni hetki, joka maistuu isolta.”
+            <span>{s.plan.message}</span>
+            {s.plan.quote}
         </motion.blockquote>
     </div>
 );
 
-const CreatePanel = () => (
+const CreatePanel = ({ s }) => (
     <div className="panel-grid">
-        {[
-            { src: '/work/choc-twist.webp', label: 'Visuaali A', score: 92 },
-            { src: '/work/choc-splash.webp', label: 'Visuaali B', score: 78 },
-        ].map((v, i) => (
-            <motion.figure key={v.label} className="panel-card creative" {...rise(i * 0.12)}>
-                <img src={v.src} alt="" loading="lazy" />
+        {['/work/choc-twist.webp', '/work/choc-splash.webp'].map((src, i) => (
+            <motion.figure key={src} className="panel-card creative" {...rise(i * 0.12)}>
+                <img src={src} alt="" loading="lazy" />
                 <figcaption>
-                    <span>{v.label}</span>
-                    <span className={`tag ${i === 0 ? 'tag--up' : ''}`}>Ennuste {v.score}/100</span>
+                    <span>
+                        {s.create.visual} {i === 0 ? 'A' : 'B'}
+                    </span>
+                    {i === 0 ? (
+                        <span className="tag tag--up">
+                            <Icon name="star" size={12} strokeWidth={2.2} /> {s.create.best}
+                        </span>
+                    ) : (
+                        <span className="tag">{s.create.alternative}</span>
+                    )}
                 </figcaption>
             </motion.figure>
         ))}
-        {[
-            ['A', 'Pieni hetki, joka maistuu isolta.', true],
-            ['B', 'Suomalaista suklaata, reilusti tehty.', false],
-        ].map(([k, text, best], i) => (
-            <motion.div key={k} className={`panel-card copy-variant ${best ? 'best' : ''}`} {...rise(0.25 + i * 0.1)}>
-                <span className="variant-key">{k}</span>
+        {s.create.copies.map((text, i) => (
+            <motion.div key={text} className={`panel-card copy-variant ${i === 0 ? 'best' : ''}`} {...rise(0.25 + i * 0.1)}>
+                <span className="variant-key">{i === 0 ? 'A' : 'B'}</span>
                 <span>{text}</span>
-                {best && <span className="tag tag--up">Valittu</span>}
+                {i === 0 && <span className="tag tag--up">{s.create.chosen}</span>}
             </motion.div>
         ))}
     </div>
 );
 
-const DAYS = ['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'];
-const POSTS = [
-    [0, 'IG Reels', '#00f0ff', '18:00'],
-    [1, 'Google-mainos', '#6f8bff', 'jatkuva'],
-    [2, 'TikTok', '#b06bff', '20:30'],
-    [3, 'IG Story', '#00f0ff', '12:00'],
-    [4, 'Uutiskirje', '#c6ff5c', '08:00'],
-    [5, 'IG Karuselli', '#00f0ff', '11:00'],
-    [6, 'TikTok', '#b06bff', '19:00'],
-];
-
-const PublishPanel = () => (
+const PublishPanel = ({ s }) => (
     <div className="calendar">
-        {DAYS.map((d, i) => (
+        {s.publish.days.map((d, i) => (
             <motion.div key={d} className="cal-day" {...rise(i * 0.05)}>
                 <span className="cal-label">{d}</span>
-                {POSTS.filter(([day]) => day === i).map(([, name, color, time]) => (
+                {POSTS.filter(([day]) => day === i).map(([day, color, time]) => (
                     <motion.div
-                        key={name}
+                        key={day}
                         className="cal-post"
                         style={{ borderColor: color }}
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -180,8 +182,8 @@ const PublishPanel = () => (
                         transition={{ delay: 0.3 + i * 0.07 }}
                     >
                         <span className="cal-dot" style={{ background: color }} />
-                        <strong>{name}</strong>
-                        <span>{time}</span>
+                        <strong>{s.publish.posts[day]}</strong>
+                        <span>{time ?? s.publish.always}</span>
                     </motion.div>
                 ))}
             </motion.div>
@@ -189,25 +191,25 @@ const PublishPanel = () => (
     </div>
 );
 
-const OptimizePanel = () => (
+const OptimizePanel = ({ s }) => (
     <div className="panel-grid">
-        {[
-            ['CTR', '2,8 %', '+0,9'],
-            ['Hinta / klikkaus', '0,42 €', '−31 %'],
-            ['ROAS', '4,1×', '+1,3'],
-        ].map(([k, v, d], i) => (
-            <motion.div key={k} className="panel-card kpi" {...rise(i * 0.08)}>
-                <span>{k}</span>
-                <strong>{v}</strong>
-                <span className="tag tag--up">{d}</span>
+        {s.optimize.kpis.map((kpi, i) => (
+            <motion.div key={kpi.label} className="panel-card kpi" {...rise(i * 0.08)}>
+                <span className="kpi-icon">
+                    <Icon name={KPI_ICONS[i]} size={20} />
+                </span>
+                <span>{kpi.label}</span>
+                <span className="tag tag--up">
+                    <Icon name={kpi.dir === 'up' ? 'trendUp' : 'trendDown'} size={13} strokeWidth={2.2} /> {kpi.trend}
+                </span>
             </motion.div>
         ))}
         <motion.div className="panel-card span-3" {...rise(0.25)}>
             <div className="panel-card-head">
-                <span>Konversiot · 8 viikkoa</span>
+                <span>{s.optimize.chart}</span>
             </div>
             <div className="columns">
-                {[22, 28, 26, 35, 41, 39, 52, 61].map((v, i) => (
+                {COLUMNS.map((v, i) => (
                     <motion.div
                         key={i}
                         className="column"
@@ -221,7 +223,7 @@ const OptimizePanel = () => (
         </motion.div>
         <motion.div className="panel-card span-3 log" {...rise(0.5)}>
             <Icon name="sparkles" size={14} />
-            Visuaali A sai 2,1× enemmän klikkauksia. Budjetti siirretty automaattisesti, B poistettu käytöstä.
+            {s.optimize.log}
         </motion.div>
     </div>
 );
@@ -235,6 +237,8 @@ const PANELS = {
 };
 
 export default function AIStudio() {
+    const { t } = useI18n();
+    const studio = t.studio;
     const [active, setActive] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
     const ref = useRef(null);
@@ -242,22 +246,22 @@ export default function AIStudio() {
 
     useEffect(() => {
         if (!autoplay || !inView) return;
-        const t = setTimeout(() => setActive((a) => (a + 1) % STUDIO.steps.length), STEP_MS);
-        return () => clearTimeout(t);
-    }, [active, autoplay, inView]);
+        const timer = setTimeout(() => setActive((a) => (a + 1) % studio.steps.length), STEP_MS);
+        return () => clearTimeout(timer);
+    }, [active, autoplay, inView, studio.steps.length]);
 
-    const step = STUDIO.steps[active];
+    const step = studio.steps[active];
     const Panel = PANELS[step.id];
 
     return (
         <section id="studio" className="section studio-section" ref={ref}>
             <div className="glow glow--cyan" style={{ width: 600, height: 600, left: '-15%', top: '20%' }} />
             <div className="container">
-                <SectionHead eyebrow={STUDIO.eyebrow} title={STUDIO.title} subtitle={STUDIO.subtitle} />
+                <SectionHead eyebrow={studio.eyebrow} title={studio.title} subtitle={studio.subtitle} />
 
                 <div className="studio-layout">
-                    <div className="studio-steps" role="tablist" aria-label="AI-studion vaiheet">
-                        {STUDIO.steps.map((s, i) => (
+                    <div className="studio-steps" role="tablist" aria-label={studio.tabsLabel}>
+                        {studio.steps.map((s, i) => (
                             <button
                                 key={s.id}
                                 role="tab"
@@ -297,10 +301,10 @@ export default function AIStudio() {
                                 <i />
                             </span>
                             <span className="window-title">
-                                VOON IQ Studio · <b>Kaakao &amp; Co</b> · {step.label}
+                                VOON IQ Studio · <b>{studio.brand}</b> · {step.label}
                             </span>
                             <span className="window-live">
-                                <i /> AI työssä
+                                <i /> {studio.live}
                             </span>
                         </div>
                         <div className="window-body" role="tabpanel">
@@ -312,11 +316,11 @@ export default function AIStudio() {
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.25 }}
                                 >
-                                    <Panel />
+                                    <Panel s={studio} />
                                 </motion.div>
                             </AnimatePresence>
                         </div>
-                        <div className="window-note">{STUDIO.note}</div>
+                        <div className="window-note">{studio.note}</div>
                     </div>
                 </div>
             </div>

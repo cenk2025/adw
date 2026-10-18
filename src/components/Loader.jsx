@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useI18n } from '../i18n/context';
 
 export default function Loader({ progress }) {
+    const { t } = useI18n();
     return (
         <motion.div
             initial={{ opacity: 1 }}
@@ -9,7 +11,7 @@ export default function Loader({ progress }) {
             transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="loader-overlay"
             role="status"
-            aria-label="Ladataan"
+            aria-label={t.loader}
         >
             <div className="loader-logo">
                 <img src="/voon-logo-96.webp" alt="VOON IQ" width="347" height="96" />

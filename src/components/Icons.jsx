@@ -79,6 +79,34 @@ const PATHS = {
         </>
     ),
     arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
+    trendUp: (
+        <>
+            <path d="M3 17l6-6 4 4 8-8" />
+            <path d="M15 7h6v6" />
+        </>
+    ),
+    trendDown: (
+        <>
+            <path d="M3 7l6 6 4-4 8 8" />
+            <path d="M15 17h6v-6" />
+        </>
+    ),
+    star: <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />,
+    target: (
+        <>
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="5" />
+            <circle cx="12" cy="12" r="1.5" />
+        </>
+    ),
+    cursor: <path d="M5 3l14 7-6 2-2 6z" />,
+    coins: (
+        <>
+            <ellipse cx="12" cy="6" rx="7" ry="3" />
+            <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6" />
+            <path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+        </>
+    ),
     arrowUpRight: <path d="M7 17L17 7M8 7h9v9" />,
     chevronLeft: <path d="M15 18l-6-6 6-6" />,
     chevronRight: <path d="M9 18l6-6-6-6" />,

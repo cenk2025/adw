@@ -50,26 +50,28 @@
 .fact {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 1.25rem;
     padding: clamp(1.5rem, 3vw, 2.5rem);
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
 }
 
-.fact-value {
-    font-size: clamp(2.6rem, 5vw, 4rem);
-    font-weight: 600;
-    letter-spacing: -0.05em;
-    line-height: 1;
+.fact-icon {
+    display: inline-flex;
+    width: 60px;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    color: #05070a;
     background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    box-shadow: 0 12px 36px rgba(0, 240, 255, 0.15);
 }
 
 .fact-label {
-    font-size: 0.95rem;
-    color: var(--color-muted);
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--color-text);
     line-height: 1.45;
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Reveal, { SectionHead } from './Reveal';
 import Icon from './Icons';
-import { SERVICES } from '../content';
+import { useI18n } from '../i18n/context';
 import './Services.css';
 
 // Moves the card's radial highlight to follow the pointer.
@@ -12,17 +12,16 @@ const trackPointer = (e) => {
 };
 
 export default function Services() {
+    const { t } = useI18n();
+    const services = t.services;
+
     return (
         <section id="palvelut" className="section services-section">
             <div className="container">
-                <SectionHead
-                    eyebrow="Palvelut"
-                    title="Kaikki mitä kasvu vaatii. Yhdeltä tiimiltä."
-                    subtitle="Tutkimuksesta visuaaleihin ja kampanjoista verkkosivuihin. Valitse yksittäinen palvelu tai anna meidän hoitaa kokonaisuus."
-                />
+                <SectionHead eyebrow={services.eyebrow} title={services.title} subtitle={services.subtitle} />
 
                 <div className="services-grid">
-                    {SERVICES.map((service, i) => (
+                    {services.items.map((service, i) => (
                         <Reveal key={service.title} delay={0.05 * (i % 3)} className="service-card-wrap">
                             <article className="service-card" onPointerMove={trackPointer}>
                                 <div className="service-top">

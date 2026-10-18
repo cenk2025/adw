@@ -1,10 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Icon from './Icons';
-import { NAV_LINKS } from '../content';
+import { useI18n } from '../i18n/context';
+import { LOCALES, NAV_ANCHORS } from '../i18n/shared';
 import './Navigation.css';
 
+function LanguageSwitcher({ className = '' }) {
+    const { locale, setLocale, t } = useI18n();
+    return (
+        <div className={`lang-switch ${className}`} role="group" aria-label={t.languageLabel}>
+            {LOCALES.map((l) => (
+                <button
+                    key={l}
+                    className={l === locale ? 'active' : ''}
+                    onClick={() => setLocale(l)}
+                    aria-pressed={l === locale}
+                    lang={l}
+                >
+                    {l.toUpperCase()}
+                </button>
+            ))}
+        </div>
+    );
+}
+
 export default function Navigation() {
+    const { t } = useI18n();
+    const nav = t.nav;
     const [scrolled, setScrolled] = useState(false);
     const [open, setOpen] = useState(false);
 
@@ -24,25 +46,26 @@ export default function Navigation() {
 
     return (
         <>
-            <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`} aria-label="Päävalikko">
-                <a href="#top" className="nav-logo" aria-label="VOON IQ etusivu">
+            <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`} aria-label={nav.aria}>
+                <a href="#top" className="nav-logo" aria-label={nav.home}>
                     <img src="/voon-logo-96.webp" alt="VOON IQ" className="nav-logo-img" width="347" height="96" />
                 </a>
                 <div className="nav-links">
-                    {NAV_LINKS.map((link) => (
-                        <a key={link.href} href={link.href} className="nav-link">
-                            {link.label}
+                    {NAV_ANCHORS.map((href, i) => (
+                        <a key={href} href={href} className="nav-link">
+                            {nav.links[i]}
                         </a>
                     ))}
                 </div>
                 <div className="nav-actions">
+                    <LanguageSwitcher className="lang-switch--desktop" />
                     <a href="#yhteys" className="nav-cta">
-                        Varaa kartoitus
+                        {nav.cta}
                     </a>
                     <button
                         className="nav-burger"
                         onClick={() => setOpen((v) => !v)}
-                        aria-label={open ? 'Sulje valikko' : 'Avaa valikko'}
+                        aria-label={open ? nav.closeMenu : nav.openMenu}
                         aria-expanded={open}
                     >
                         <Icon name={open ? 'close' : 'menu'} size={22} />
@@ -59,21 +82,22 @@ export default function Navigation() {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.25 }}
                     >
-                        {NAV_LINKS.map((link, i) => (
+                        {NAV_ANCHORS.map((href, i) => (
                             <motion.a
-                                key={link.href}
-                                href={link.href}
+                                key={href}
+                                href={href}
                                 className="mobile-link"
                                 onClick={() => setOpen(false)}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.05 * i, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                             >
-                                {link.label}
+                                {nav.links[i]}
                             </motion.a>
                         ))}
+                        <LanguageSwitcher className="lang-switch--mobile" />
                         <a href="#yhteys" className="btn btn-gradient" onClick={() => setOpen(false)}>
-                            Varaa maksuton kartoitus
+                            {nav.mobileCta}
                             <Icon name="arrowRight" size={18} />
                         </a>
                     </motion.div>

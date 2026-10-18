@@ -1,17 +1,21 @@
 import React from 'react';
 import Icon from './Icons';
-import { CONTACT_EMAIL, FOOTER, NAV_LINKS, SERVICES, WEB } from '../content';
+import { useI18n } from '../i18n/context';
+import { CONTACT_EMAIL, NAV_ANCHORS, PRODUCTS } from '../i18n/shared';
 import './Footer.css';
 
 export default function Footer() {
+    const { t } = useI18n();
+    const footer = t.footer;
+
     return (
         <footer className="footer-container">
             <div className="footer-cta container">
                 <h2>
-                    Tehdään jotain, <span className="serif gradient-text">mikä pysäyttää.</span>
+                    {footer.ctaStart} <span className="serif gradient-text">{footer.ctaAccent}</span>
                 </h2>
                 <a href="#yhteys" className="btn btn-primary">
-                    Varaa maksuton kartoitus
+                    {footer.cta}
                     <Icon name="arrowRight" size={18} />
                 </a>
             </div>
@@ -22,7 +26,7 @@ export default function Footer() {
                         <a href="#top" className="footer-logo" aria-label="VOON IQ">
                             <img src="/voon-logo-96.webp" alt="VOON IQ" width="347" height="96" />
                         </a>
-                        <p className="footer-tagline">{FOOTER.tagline}</p>
+                        <p className="footer-tagline">{footer.tagline}</p>
                         <a href={`mailto:${CONTACT_EMAIL}`} className="footer-email">
                             <Icon name="mail" size={18} />
                             {CONTACT_EMAIL}
@@ -31,25 +35,25 @@ export default function Footer() {
 
                     <div className="footer-links-group">
                         <div className="footer-column">
-                            <h4>Palvelut</h4>
-                            {SERVICES.map((s) => (
+                            <h4>{footer.columns.services}</h4>
+                            {t.services.items.map((s) => (
                                 <a key={s.title} href="#palvelut">
                                     {s.title}
                                 </a>
                             ))}
                         </div>
                         <div className="footer-column">
-                            <h4>Sivusto</h4>
-                            {NAV_LINKS.map((link) => (
-                                <a key={link.href} href={link.href}>
-                                    {link.label}
+                            <h4>{footer.columns.site}</h4>
+                            {NAV_ANCHORS.map((href, i) => (
+                                <a key={href} href={href}>
+                                    {t.nav.links[i]}
                                 </a>
                             ))}
-                            <a href="#yhteys">Yhteys</a>
+                            <a href="#yhteys">{footer.contactLink}</a>
                         </div>
                         <div className="footer-column">
-                            <h4>Tuotteemme</h4>
-                            {WEB.products.map((p) => (
+                            <h4>{footer.columns.products}</h4>
+                            {PRODUCTS.map((p) => (
                                 <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer">
                                     {p.name}
                                 </a>
@@ -63,13 +67,13 @@ export default function Footer() {
 
                 <div className="footer-bottom">
                     <p>
-                        &copy; {new Date().getFullYear()} {FOOTER.company} · Jyväskylä
+                        &copy; {new Date().getFullYear()} {footer.company} · {footer.location}
                     </p>
                     <button
                         className="footer-cookie"
                         onClick={() => window.dispatchEvent(new Event('voon:cookie-settings'))}
                     >
-                        Evästeasetukset
+                        {footer.cookieSettings}
                     </button>
                 </div>
             </div>

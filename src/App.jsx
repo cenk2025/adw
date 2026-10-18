@@ -19,7 +19,7 @@ import './index.css';
 
 export default function App() {
     // Service preselected in the contact form when a pricing plan CTA is clicked.
-    const [presetNeed, setPresetNeed] = useState('');
+    const [presetNeed, setPresetNeed] = useState(null);
 
     useEffect(() => {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
