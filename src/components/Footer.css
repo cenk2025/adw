@@ -85,7 +85,14 @@
 .footer-links-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    gap: 2.25rem 1.5rem;
+}
+
+/* Phones: services get the full width, site links and products sit side by side below. */
+@media (max-width: 639px) {
+    .footer-column:first-child {
+        grid-column: 1 / -1;
+    }
 }
 
 @media (min-width: 640px) {
@@ -124,7 +131,8 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--color-border);
     font-size: 0.85rem;
@@ -143,16 +151,42 @@
 }
 
 .footer-wordmark {
-    font-size: clamp(5rem, 22vw, 20rem);
+    font-size: clamp(4rem, 20vw, 20rem);
     font-weight: 700;
     letter-spacing: -0.06em;
-    line-height: 0.8;
+    line-height: 0.85;
     text-align: center;
     white-space: nowrap;
-    margin-bottom: -0.12em;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 85%);
+    padding: 0 clamp(1rem, 4vw, 2rem) clamp(1rem, 3vw, 2rem);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.025) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     user-select: none;
+}
+
+@media (max-width: 639px) {
+    .footer-cta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .footer-content {
+        padding-top: 3rem;
+    }
+
+    .footer-top {
+        gap: 2.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-column {
+        gap: 0.85rem;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

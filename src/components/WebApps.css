@@ -161,3 +161,20 @@
 .product-card:hover .product-arrow {
     color: var(--color-accent);
 }
+
+@media (max-width: 479px) {
+    .product-card {
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .product-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+    }
+
+    .product-arrow {
+        display: none;
+    }
+}

@@ -142,7 +142,7 @@ img {
 
 .section {
   position: relative;
-  padding: clamp(5rem, 11vw, 9rem) 0;
+  padding: clamp(4rem, 11vw, 9rem) 0;
 }
 
 .section-head {
