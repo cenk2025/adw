@@ -8,6 +8,7 @@ const fi = {
     },
 
     languageLabel: 'Kieli',
+    theme: { label: 'Teema', system: 'Järjestelmä', light: 'Vaalea', dark: 'Tumma' },
 
     nav: {
         aria: 'Päävalikko',

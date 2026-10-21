@@ -30,8 +30,8 @@
     z-index: 2;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 70% 60% at 50% 48%, rgba(7, 9, 13, 0.4) 0%, rgba(7, 9, 13, 0.2) 55%, rgba(7, 9, 13, 0.65) 100%),
-        linear-gradient(180deg, rgba(7, 9, 13, 0.55) 0%, rgba(7, 9, 13, 0) 25%, rgba(7, 9, 13, 0) 65%, rgba(7, 9, 13, 0.95) 100%);
+        radial-gradient(ellipse 70% 60% at 50% 48%, rgba(13, 19, 33, 0.4) 0%, rgba(13, 19, 33, 0.2) 55%, rgba(13, 19, 33, 0.65) 100%),
+        linear-gradient(180deg, rgba(13, 19, 33, 0.55) 0%, rgba(13, 19, 33, 0) 25%, rgba(13, 19, 33, 0) 65%, rgba(13, 19, 33, 0.95) 100%);
 }
 
 .hero-dip {

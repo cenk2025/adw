@@ -20,9 +20,9 @@
     padding: 1.25rem;
     border: 1px solid var(--color-border-strong);
     border-radius: 20px;
-    background: rgba(12, 16, 23, 0.88);
+    background: rgba(var(--bg-rgb), 0.88);
     backdrop-filter: blur(16px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px var(--shadow-color);
 }
 
 .cookie-content {
@@ -75,17 +75,17 @@
 
 .btn-decline {
     border: 1px solid var(--color-border-strong);
-    color: #c9ced8;
+    color: var(--color-text-2);
 }
 
 .btn-decline:hover {
-    border-color: #fff;
-    color: #fff;
+    border-color: var(--color-text);
+    color: var(--color-text);
 }
 
 .btn-accept {
-    background: #fff;
-    color: #05070a;
+    background: var(--contrast-bg);
+    color: var(--contrast-fg);
     font-weight: 600;
 }
 

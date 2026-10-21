@@ -36,7 +36,7 @@
 .plan--highlight {
     border-color: transparent;
     background:
-        linear-gradient(#0d1119, #0d1119) padding-box,
+        linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
         var(--gradient-brand) border-box;
     border: 1px solid transparent;
     box-shadow: 0 30px 90px rgba(111, 139, 255, 0.18);
@@ -106,7 +106,7 @@
     gap: 0.6rem;
     align-items: flex-start;
     font-size: 0.95rem;
-    color: #d6dbe3;
+    color: var(--color-text-2);
     line-height: 1.45;
 }
 

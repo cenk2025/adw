@@ -249,7 +249,7 @@ export default function VoonScrollExperience() {
             <section
                 ref={containerRef}
                 style={{ height: `${SCROLL_HEIGHT_VH}vh` }}
-                className="scroll-container"
+                className="scroll-container force-dark"
                 aria-label={hero.aria}
             >
                 <div className="sticky-viewport">

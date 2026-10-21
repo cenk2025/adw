@@ -35,7 +35,7 @@
     padding: 2rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    background: linear-gradient(180deg, rgba(var(--fg-rgb), 0.04), rgba(var(--fg-rgb), 0.01));
     overflow: hidden;
     transition: border-color 0.3s, transform 0.4s var(--ease-out);
 }
@@ -111,7 +111,7 @@
     align-items: center;
     gap: 0.6rem;
     font-size: 0.93rem;
-    color: #d6dbe3;
+    color: var(--color-text-2);
 }
 
 .service-card li svg {

@@ -14,7 +14,7 @@ export default function Loader({ progress }) {
             aria-label={t.loader}
         >
             <div className="loader-logo">
-                <img src="/voon-logo-96.webp" alt="VOON IQ" width="347" height="96" />
+                <img src="/voon-logo-96.webp" alt="VOON IQ" className="theme-logo" width="347" height="96" />
             </div>
             <div className="loader-bar-container">
                 <motion.div

@@ -8,6 +8,7 @@ const sv = {
     },
 
     languageLabel: 'Språk',
+    theme: { label: 'Tema', system: 'System', light: 'Ljust', dark: 'Mörkt' },
 
     nav: {
         aria: 'Huvudmeny',

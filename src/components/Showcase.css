@@ -57,6 +57,9 @@
     gap: 0.3rem;
     padding: 4rem 1.5rem 1.4rem;
     background: linear-gradient(180deg, transparent, rgba(5, 7, 10, 0.85));
+    /* Captions sit on the image, so they stay light in both themes. */
+    color: #fff;
+    --color-accent: #00f0ff;
 }
 
 .work-tag {

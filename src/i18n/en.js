@@ -8,6 +8,7 @@ const en = {
     },
 
     languageLabel: 'Language',
+    theme: { label: 'Theme', system: 'System', light: 'Light', dark: 'Dark' },
 
     nav: {
         aria: 'Main menu',

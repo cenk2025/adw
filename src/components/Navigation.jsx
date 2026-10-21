@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Icon from './Icons';
 import { useI18n } from '../i18n/context';
 import { LOCALES, NAV_ANCHORS } from '../i18n/shared';
+import { THEME_OPTIONS, useThemePreference } from '../theme';
 import './Navigation.css';
 
 function LanguageSwitcher({ className = '' }) {
@@ -24,11 +25,34 @@ function LanguageSwitcher({ className = '' }) {
     );
 }
 
+const THEME_ICONS = { system: 'monitor', light: 'sun', dark: 'moon' };
+
+function ThemeSwitcher({ preference, onChange, className = '' }) {
+    const { t } = useI18n();
+    return (
+        <div className={`lang-switch theme-switch ${className}`} role="group" aria-label={t.theme.label}>
+            {THEME_OPTIONS.map((option) => (
+                <button
+                    key={option}
+                    className={option === preference ? 'active' : ''}
+                    onClick={() => onChange(option)}
+                    aria-pressed={option === preference}
+                    aria-label={t.theme[option]}
+                    title={t.theme[option]}
+                >
+                    <Icon name={THEME_ICONS[option]} size={15} strokeWidth={1.9} />
+                </button>
+            ))}
+        </div>
+    );
+}
+
 export default function Navigation() {
     const { t } = useI18n();
     const nav = t.nav;
     const [scrolled, setScrolled] = useState(false);
     const [open, setOpen] = useState(false);
+    const [themePreference, setThemePreference] = useThemePreference();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -48,7 +72,7 @@ export default function Navigation() {
         <>
             <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`} aria-label={nav.aria}>
                 <a href="#top" className="nav-logo" aria-label={nav.home}>
-                    <img src="/voon-logo-96.webp" alt="VOON IQ" className="nav-logo-img" width="347" height="96" />
+                    <img src="/voon-logo-96.webp" alt="VOON IQ" className="nav-logo-img theme-logo" width="347" height="96" />
                 </a>
                 <div className="nav-links">
                     {NAV_ANCHORS.map((href, i) => (
@@ -58,6 +82,11 @@ export default function Navigation() {
                     ))}
                 </div>
                 <div className="nav-actions">
+                    <ThemeSwitcher
+                        preference={themePreference}
+                        onChange={setThemePreference}
+                        className="lang-switch--desktop"
+                    />
                     <LanguageSwitcher className="lang-switch--desktop" />
                     <a href="#yhteys" className="nav-cta">
                         {nav.cta}
@@ -95,7 +124,14 @@ export default function Navigation() {
                                 {nav.links[i]}
                             </motion.a>
                         ))}
-                        <LanguageSwitcher className="lang-switch--mobile" />
+                        <div className="mobile-switches">
+                            <LanguageSwitcher className="lang-switch--mobile" />
+                            <ThemeSwitcher
+                                preference={themePreference}
+                                onChange={setThemePreference}
+                                className="lang-switch--mobile"
+                            />
+                        </div>
                         <a href="#yhteys" className="btn btn-gradient" onClick={() => setOpen(false)}>
                             {nav.mobileCta}
                             <Icon name="arrowRight" size={18} />
