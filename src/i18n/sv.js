@@ -404,6 +404,23 @@ const sv = {
         cookieSettings: 'Cookie-inställningar',
     },
 
+    newsletter: {
+        title: 'Nyhetsbrev',
+        body: 'AI, marknadsföring och webb – praktiska tips och nyheter ungefär en gång i månaden.',
+        placeholder: 'du@foretag.se',
+        submit: 'Prenumerera',
+        consent: 'Jag vill ha VOON IQ:s nyhetsbrev. Jag kan avsluta prenumerationen när som helst via länken i varje utskick.',
+        sending: 'Skickar…',
+        sent: 'Nästan klart! Bekräfta prenumerationen via länken vi skickade till din e-post.',
+        error: 'Prenumerationen misslyckades. Kontrollera adressen och försök igen.',
+        notice: {
+            ok: 'Tack! Din prenumeration är bekräftad.',
+            invalid: 'Bekräftelselänken har gått ut eller är ogiltig. Prenumerera på nytt längst ner på sidan.',
+            error: 'Vi kunde inte bekräfta prenumerationen. Försök igen om en stund.',
+            close: 'Stäng',
+        },
+    },
+
     cookie: {
         aria: 'Cookie-inställningar',
         title: 'Vi använder cookies',

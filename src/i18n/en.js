@@ -404,6 +404,23 @@ const en = {
         cookieSettings: 'Cookie settings',
     },
 
+    newsletter: {
+        title: 'Newsletter',
+        body: 'AI, marketing and the web – practical tips and news about once a month.',
+        placeholder: 'you@company.com',
+        submit: 'Subscribe',
+        consent: 'I want the VOON IQ newsletter. I can unsubscribe at any time from the link in every email.',
+        sending: 'Sending…',
+        sent: 'Almost done! Confirm your subscription from the link we just emailed you.',
+        error: 'Subscription failed. Check the address and try again.',
+        notice: {
+            ok: 'Thank you! Your newsletter subscription is confirmed.',
+            invalid: 'The confirmation link has expired or is invalid. Please subscribe again at the bottom of the page.',
+            error: 'We could not confirm your subscription. Please try again shortly.',
+            close: 'Close',
+        },
+    },
+
     cookie: {
         aria: 'Cookie settings',
         title: 'We use cookies',
