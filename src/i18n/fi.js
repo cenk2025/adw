@@ -404,23 +404,6 @@ const fi = {
         cookieSettings: 'Evästeasetukset',
     },
 
-    newsletter: {
-        title: 'Uutiskirje',
-        body: 'Tekoälyä, markkinointia ja webiä – käytännön vinkit ja uutiset noin kerran kuussa.',
-        placeholder: 'sähköposti@yritys.fi',
-        submit: 'Tilaa',
-        consent: 'Haluan VOON IQ:n uutiskirjeen. Voin perua tilauksen milloin tahansa jokaisen viestin linkistä.',
-        sending: 'Lähetetään…',
-        sent: 'Melkein valmista! Vahvista tilaus sähköpostiisi lähetetystä linkistä.',
-        error: 'Tilaus ei onnistunut. Tarkista osoite ja yritä uudelleen.',
-        notice: {
-            ok: 'Kiitos! Uutiskirjeen tilaus on vahvistettu.',
-            invalid: 'Vahvistuslinkki on vanhentunut tai virheellinen. Tilaa uutiskirje uudelleen sivun alaosasta.',
-            error: 'Tilauksen vahvistus epäonnistui. Yritä hetken päästä uudelleen.',
-            close: 'Sulje',
-        },
-    },
-
     cookie: {
         aria: 'Evästeasetukset',
         title: 'Käytämme evästeitä',

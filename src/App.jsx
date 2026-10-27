@@ -14,7 +14,6 @@ import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
-import { NewsletterNotice } from './components/Newsletter';
 import { setLenis } from './lib/scroll';
 import './index.css';
 
@@ -70,7 +69,6 @@ export default function App() {
 
             <Footer />
             <CookieConsent />
-            <NewsletterNotice />
         </div>
     );
 }

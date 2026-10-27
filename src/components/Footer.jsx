@@ -1,6 +1,5 @@
 import React from 'react';
 import Icon from './Icons';
-import { NewsletterForm } from './Newsletter';
 import { useI18n } from '../i18n/context';
 import { CONTACT_EMAIL, NAV_ANCHORS, PRODUCTS } from '../i18n/shared';
 import './Footer.css';
@@ -32,7 +31,6 @@ export default function Footer() {
                             <Icon name="mail" size={18} />
                             {CONTACT_EMAIL}
                         </a>
-                        <NewsletterForm />
                     </div>
 
                     <div className="footer-links-group">

@@ -30,29 +30,3 @@ npm run build
 | `RESEND_API_KEY` | Resendin API-avain (sama kuin voon.fi-projektissa).                    |
 | `RESEND_FROM`    | Lähettäjä Resendissä vahvistetusta domainista, esim. `VOON IQ <info@voon.fi>`. |
 | `CONTACT_TO`     | Valinnainen. Vastaanottaja, oletuksena `info@voon.fi`.                 |
-
-## Uutiskirje
-
-Tilaajat liittyvät sivun alaosan lomakkeella (fi/en/sv). Tilaus vahvistetaan kahdessa vaiheessa:
-lomake lähettää vahvistuslinkin, ja vasta linkin klikkaus lisää osoitteen Resendin segmenttiin
-(`/api/newsletter/subscribe` → `/api/newsletter/confirm`). Lähetykset tehdään sivulta
-`/uutiskirje-admin.html`, joka on suojattu salasanalla. Sivulla voi esikatsella, lähettää testin,
-lähettää heti tai ajastaa, ja se näyttää aiemmat lähetykset. Lähetys kulkee Resend Broadcasts -palvelun kautta, joka
-hoitaa myös peruutuslinkin ja -listan.
-
-| Muuttuja | Kuvaus |
-| --- | --- |
-| `NEWSLETTER_FROM` | Lähettäjä, esim. `VOON IQ <uutiset@uutiset.voon.fi>` (domain vahvistettuna Resendissä). |
-| `NEWSLETTER_SEGMENT_ID` | Resendin segmentti, johon kaikki tilaajat lisätään ja jolle lähetetään. |
-| `NEWSLETTER_SEGMENT_ID_FI` / `_EN` / `_SV` | Valinnaiset kielikohtaiset segmentit. |
-| `NEWSLETTER_SECRET` | Satunnainen, vähintään 32 merkkiä. Allekirjoittaa vahvistuslinkit. |
-| `NEWSLETTER_ADMIN_PASSWORD` | Admin-sivun salasana, vähintään 12 merkkiä. |
-| `SITE_URL` | Valinnainen, oletus `https://ads.voon.fi`. |
-
-`RESEND_API_KEY`:llä on oltava **Full access** -oikeus, koska pelkkä lähetysoikeus ei riitä
-kontakteihin ja broadcasteihin.
-
-Uutiskirjepohjan säännöt (`newsletter/`):
-- Kuvien on oltava https-osoitteissa (esim. `public/newsletter/<kk>/`). Gmail estää `data:`-kuvat.
-- Peruutuslinkki on `href="{{{RESEND_UNSUBSCRIBE_URL}}}"`.
-- Koko on alle 100 kt, koska Gmail leikkaa pidemmät viestit.
