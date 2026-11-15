@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://ads.voon.fi/</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="fi" href="https://ads.voon.fi/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ads.voon.fi/en"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://ads.voon.fi/sv"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ads.voon.fi/"/>
+  </url>
+  <url>
+    <loc>https://ads.voon.fi/en</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="fi" href="https://ads.voon.fi/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ads.voon.fi/en"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://ads.voon.fi/sv"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ads.voon.fi/"/>
+  </url>
+  <url>
+    <loc>https://ads.voon.fi/sv</loc>
+    <lastmod>2026-11-15</lastmod>
+    <xhtml:link rel="alternate" hreflang="fi" href="https://ads.voon.fi/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ads.voon.fi/en"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://ads.voon.fi/sv"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ads.voon.fi/"/>
+  </url>
+</urlset>

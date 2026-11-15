@@ -27,6 +27,9 @@ export default function LocaleProvider({ children }) {
         document.documentElement.lang = locale;
         document.title = t.meta.title;
         document.querySelector('meta[name="description"]')?.setAttribute('content', t.meta.description);
+        const url = `https://ads.voon.fi${pathForLocale(locale)}`;
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', url);
+        document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
     }, [locale, t]);
 
     const value = useMemo(() => ({ locale, t, setLocale }), [locale, t, setLocale]);
