@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Reveal from './Reveal';
+import Turnstile from './Turnstile';
 import Icon from './Icons';
 import { useI18n } from '../i18n/context';
 import { CONTACT_EMAIL } from '../i18n/shared';
 import './Contact.css';
+
+// Inlined at build time from the TURNSTILE_SITE_KEY env var (see vite.config.js). Empty = no widget.
+const TURNSTILE_SITE_KEY = import.meta.env.TURNSTILE_SITE_KEY;
 
 export default function Contact({ presetNeed }) {
     const { t, locale } = useI18n();
@@ -15,6 +19,14 @@ export default function Contact({ presetNeed }) {
     // The selected need is kept as an index so it survives a language switch.
     const [need, setNeed] = useState(presetNeed ?? 0);
     const [prevPreset, setPrevPreset] = useState(presetNeed);
+    const [turnstileToken, setTurnstileToken] = useState(null);
+    // A token works only once, so the widget is remounted after each attempt.
+    const [turnstileKey, setTurnstileKey] = useState(0);
+    // When the form was shown: bots submit far faster than people can type.
+    const startedAt = useRef(0);
+    useEffect(() => {
+        startedAt.current = Date.now();
+    }, []);
 
     // Follow the plan picked in the pricing section.
     if (presetNeed !== prevPreset) {
@@ -25,7 +37,7 @@ export default function Contact({ presetNeed }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const form = e.currentTarget;
-        const data = { ...Object.fromEntries(new FormData(form).entries()), need: contact.needs[need], locale };
+        const data = { ...Object.fromEntries(new FormData(form).entries()), need: contact.needs[need], locale, startedAt: startedAt.current, turnstileToken };
         setStatus('loading');
 
         try {
@@ -41,6 +53,8 @@ export default function Contact({ presetNeed }) {
         } catch (error) {
             console.error('Error sending contact form:', error);
             setStatus('error');
+        } finally {
+            setTurnstileKey((k) => k + 1);
         }
     };
 
@@ -190,6 +204,10 @@ export default function Contact({ presetNeed }) {
                                     <span>{fields.consent}</span>
                                 </label>
 
+                                {TURNSTILE_SITE_KEY && (
+                                    <Turnstile key={turnstileKey} siteKey={TURNSTILE_SITE_KEY} language={locale} onToken={setTurnstileToken} />
+                                )}
+
                                 {status === 'error' && (
                                     <div className="form-error" role="alert">
                                         <Icon name="alert" size={18} />
@@ -199,7 +217,7 @@ export default function Contact({ presetNeed }) {
                                     </div>
                                 )}
 
-                                <button type="submit" className="btn btn-gradient btn-block" disabled={status === 'loading'}>
+                                <button type="submit" className="btn btn-gradient btn-block" disabled={status === 'loading' || (TURNSTILE_SITE_KEY && !turnstileToken)}>
                                     {status === 'loading' ? (
                                         <>
                                             <span className="spinner" aria-hidden="true" /> {contact.sending}

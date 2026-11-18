@@ -37,6 +37,48 @@ const AUTO_REPLY = {
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Bot protection: honeypot, minimum fill time, per-IP rate limit and Cloudflare Turnstile.
+const MIN_FILL_MS = 3000;
+const MAX_FILL_MS = 24 * 60 * 60 * 1000;
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+// Per serverless instance only, but it still slows a single source down.
+const hits = new Map();
+
+const clientIp = (req) =>
+    String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown';
+
+function rateLimited(ip) {
+    const now = Date.now();
+    if (hits.size > 5000) {
+        for (const [key, times] of hits) if (times.every((t) => now - t > RATE_WINDOW_MS)) hits.delete(key);
+    }
+    const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+    recent.push(now);
+    hits.set(ip, recent);
+    return recent.length > RATE_LIMIT;
+}
+
+// Skipped when TURNSTILE_SECRET_KEY is not set, so the form keeps working before the keys exist.
+async function turnstileOk(token, ip) {
+    const secret = process.env.TURNSTILE_SECRET_KEY;
+    if (!secret) return true;
+    if (typeof token !== 'string' || !token || token.length > 2048) return false;
+    try {
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+            signal: AbortSignal.timeout(5000),
+        });
+        const result = await response.json();
+        if (!result.success) console.warn('Turnstile rejected', result['error-codes']);
+        return result.success === true;
+    } catch (err) {
+        console.error('Turnstile verification failed:', err);
+        return false;
+    }
+}
+
 const escapeHtml = (value) =>
     String(value)
         .replace(/&/g, '&amp;')
@@ -85,6 +127,20 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
     }
 
+    const elapsed = Date.now() - Number(body.startedAt);
+    if (!Number.isFinite(elapsed) || elapsed < MIN_FILL_MS || elapsed > MAX_FILL_MS) {
+        return res.status(400).json({ error: 'Please try again' });
+    }
+
+    const ip = clientIp(req);
+    if (rateLimited(ip)) {
+        return res.status(429).json({ error: 'Too many requests' });
+    }
+
+    if (!(await turnstileOk(body.turnstileToken, ip))) {
+        return res.status(403).json({ error: 'Bot check failed' });
+    }
+
     const data = Object.fromEntries(Object.entries(LIMITS).map(([key, max]) => [key, clean(body[key], max)]));
 
     if (!data.company || !data.name || !data.email || !data.need) {
@@ -107,7 +163,7 @@ export default async function handler(req, res) {
             from: FROM_ADDRESS,
             to: TO_ADDRESS,
             replyTo: data.email,
-            subject: `Uusi yhteydenotto (ads.voon.fi): ${data.company} – ${data.need}`,
+            subject: `Uusi yhteydenotto (ads.voon.fi): ${data.company} – ${data.need}`.replace(/[\r\n]+/g, ' '),
             html: shell(
                 'Uusi yhteydenotto VOON IQ -markkinointisivustolta',
                 `<table style="width:100%;border-collapse:collapse">

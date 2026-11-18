@@ -219,6 +219,12 @@ a.contact-card:hover {
     overflow: hidden;
 }
 
+.turnstile {
+    display: flex;
+    justify-content: center;
+    min-height: 65px;
+}
+
 .consent {
     display: flex;
     gap: 0.75rem;
