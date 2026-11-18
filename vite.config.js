@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import en from './src/i18n/en.js'
 import sv from './src/i18n/sv.js'
@@ -44,6 +44,14 @@ function localizedHtml() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), localizedHtml()],
+export default defineConfig(({ mode }) => {
+  // The Turnstile site key is public; it is inlined into the client bundle. The secret key is only
+  // read by api/send-email.js at runtime.
+  const env = loadEnv(mode, path.resolve(), '')
+  return {
+    plugins: [react(), localizedHtml()],
+    define: {
+      'import.meta.env.TURNSTILE_SITE_KEY': JSON.stringify(env.TURNSTILE_SITE_KEY || ''),
+    },
+  }
 })

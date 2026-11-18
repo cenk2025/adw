@@ -30,3 +30,9 @@ npm run build
 | `RESEND_API_KEY` | Resendin API-avain (sama kuin voon.fi-projektissa).                    |
 | `RESEND_FROM`    | Lähettäjä Resendissä vahvistetusta domainista, esim. `VOON IQ <info@voon.fi>`. |
 | `CONTACT_TO`     | Valinnainen. Vastaanottaja, oletuksena `info@voon.fi`.                 |
+| `TURNSTILE_SITE_KEY`   | Cloudflare Turnstile -widgetin Site Key (julkinen, upotetaan buildiin). |
+| `TURNSTILE_SECRET_KEY` | Saman widgetin Secret Key. Ilman sitä Turnstile-tarkistus ohitetaan.   |
+
+Lomakkeen bottisuojaus: honeypot-kenttä, vähintään 3 s täyttöaika, 5 lähetystä / 10 min / IP ja
+Cloudflare Turnstile. Lisää `ads.voon.fi` Turnstile-widgetin Hostnames-listaan. Paikallisesti voi
+käyttää Cloudflaren testiavaimia (`1x00000000000000000000AA` / `1x0000000000000000000000000000000AA`).
